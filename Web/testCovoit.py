@@ -41,7 +41,7 @@ def user_profile(user_id):
     routes = []
 
     # Adresse fixe (hardcodée)
-    hardcoded_address = "Paris, France"
+    hardcoded_address = "99 Av. Jean Baptiste Clément, 93430 Villetaneuse"
     hardcoded_coords = geocode_address(hardcoded_address)
 
     # Chercher tous les autres utilisateurs (en excluant l'utilisateur actuel)
@@ -55,11 +55,11 @@ def user_profile(user_id):
         # Calculer les trajets possibles
         if user_coords and other_coords and hardcoded_coords:
             routes.append({
-                'route1': (user_coords, other_coords, f"Trajet de {user.first_name} à {other_user.first_name}"),
-                'route2': (other_coords, hardcoded_coords, f"Trajet de {user.first_name} vers Paris"),
+                'name': other_user.first_name,
+                'route': (other_coords),
             })
 
-    return render_template('testlistcovoit.html', user=user, routes=routes)
+    return render_template('Conducteur.html', user=user, routes=routes)
 
 
 def geocode_address(address):
