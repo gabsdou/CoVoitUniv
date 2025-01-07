@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for,send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 import requests
 
@@ -34,6 +34,14 @@ def signup():
 
     return render_template('testcovoit.html')
 
+@app.route('/leaflet/<path:filename>')
+def leaflet_static(filename):
+    return send_from_directory('leaflet', filename)
+
+@app.route('/leaflet-routing-machine/<path:filename>')
+def leaflet_routing_machine_static(filename):
+    return send_from_directory('leaflet-routing-machine', filename)
+
 @app.route('/user/<int:user_id>', methods=['GET', 'POST'])
 def user_profile(user_id):
     """Page de profil d'un utilisateur."""
@@ -42,18 +50,17 @@ def user_profile(user_id):
 
     # Adresse fixe (hardcodée)
     hardcoded_address = "99 Av. Jean Baptiste Clément, 93430 Villetaneuse"
-    hardcoded_coords = geocode_address(hardcoded_address)
 
     # Chercher tous les autres utilisateurs (en excluant l'utilisateur actuel)
     other_users = User.query.filter(User.id != user_id).all()
 
     for other_user in other_users:
         # Géocodage des adresses des utilisateurs
-        user_coords = geocode_address(user.address)
+        print(other_user.address)
         other_coords = geocode_address(other_user.address) if other_user else None
         
         # Calculer les trajets possibles
-        if user_coords and other_coords and hardcoded_coords:
+        if other_coords:
             routes.append({
                 'name': other_user.first_name,
                 'route': (other_coords),

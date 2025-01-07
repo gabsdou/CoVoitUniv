@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <title>Ma carte Leaflet locale</title>
 <!-- Feuille de style Leaflet -->
-<link rel="stylesheet" href="./leaflet/leaflet.css">
+<link rel="stylesheet" href="/leaflet/leaflet.css">
 
 <!-- Feuille de style Leaflet Routing Machine -->
-<link rel="stylesheet" href="./leaflet-routing-machine/leaflet-routing-machine.css">
+<link rel="stylesheet" href="/leaflet-routing-machine/leaflet-routing-machine.css">
 
 
   <style>
@@ -58,10 +58,10 @@
 
 
 <!-- Script Leaflet -->
-<script src="./leaflet/leaflet.js"></script>
+<script src="/leaflet/leaflet.js"></script>
 
 <!-- Script Leaflet Routing Machine -->
-<script src="./leaflet-routing-machine/leaflet-routing-machine.js"></script>
+<script src="/leaflet-routing-machine/leaflet-routing-machine.js"></script>
 
 
 <!-- Script d'initialisation de la carte -->
@@ -96,13 +96,6 @@
 
   }).addTo(map);
 
-  {% for route in routes %}
-            // Récupérer les coordonnées des trajets et afficher une polyline
-            var destination = [
-                [{{ route['name'] }}], // Départ
-                [{{ route['route'] }}]  // Arrivée
-            ];
-  {% endfor %}
   var destinations = [
   { name: 'Aubervilliers',   coords: [48.91438, 2.38206],  active: false },
       { name: 'Dugny',        coords: [48.95311, 2.41364],  active: false },
