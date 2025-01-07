@@ -13,8 +13,20 @@
   <style>
     /* Donne une taille à la div qui contiendra la carte */
     #map {
-      width: 1000px;
-      height: 1000px;
+      width: 700px;
+      height: 600px;
+    }
+    /* Conteneur pour les instructions */
+    #route-infos {
+      width: 30%;
+      height: 500px;
+      float: right; /* à droite de la carte, par exemple */
+      overflow-y: auto; /* permet de scroller si les infos sont longues */
+      box-sizing: border-box;
+      padding: 10px;
+    }
+    .leaflet-routing-container {
+      display: none !important;
     }
   </style>
 </head>
@@ -24,6 +36,9 @@
 
 <!-- Conteneur pour la carte -->
 <div id="map"></div>
+
+<div id="route-infos"></div>
+
 
 <!-- Script Leaflet -->
 <script src="./leaflet/leaflet.js"></script>
@@ -53,17 +68,22 @@ L.Routing.control({
     ],
 
     // (Optionnel) Autoriser le recalcul en glissant les marqueurs
-    routeWhileDragging: true
-
+    routeWhileDragging: true,
+    
+    
+    
+    
+    //IMPORTANT
     // (Optionnel) Préciser un service de routage personnalisé (OSRM, ORS, etc.)
-    // router: L.Routing.osrmv1({
-    //   serviceUrl: 'https://ton-serveur-osrm/route/v1'
-    // })
+    /*router: L.Routing.osrmv1({
+    serviceUrl: 'https://router.project-osrm.org/route/v1/driving'
+    })*/
 
   }).addTo(map);
 
 
 </script>
+
 
 </body>
 </html>
