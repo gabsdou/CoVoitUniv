@@ -10,7 +10,7 @@ db = SQLAlchemy(app)
 
 # Modèle pour les utilisateurs
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
     address = db.Column(db.String(200), nullable=False)
@@ -18,17 +18,36 @@ class User(db.Model):
 
 
 @app.route('/', methods=['GET', 'POST'])
+def login():
+    """Page de connexion."""
+    if request.method == 'POST':
+        numero = request.form['numero_etudiant']
+        
+        # Vérifier si l'utilisateur existe dans la base de données
+        user = User.query.filter_by(id=numero).first()
+        
+        if user:
+            # Si l'utilisateur existe, rediriger vers son profil
+            return redirect(url_for('user_profile', user_id=user.id))
+        else:
+            # Si l'utilisateur n'existe pas, afficher un message d'erreur ou un bouton vers l'inscription
+            return redirect(url_for('signup'))
+    
+    return render_template('login.html', error=None)
+
+
+@app.route('/Inscription', methods=['GET', 'POST'])
 def signup():
     """Page d'inscription avec formulaire."""
     if request.method == 'POST':
-        numero = request.form['numero étudiant']
+        numero = request.form['numero_etudiant']
         first_name = request.form['first_name']
         last_name = request.form['last_name']
         address = request.form['address']
         is_driver = True if request.form.get('is_driver') == 'on' else False
 
         # Ajouter l'utilisateur à la base de données
-        new_user = User(numero,first_name=first_name, last_name=last_name, address=address, is_driver=is_driver)
+        new_user = User(id=numero,first_name=first_name, last_name=last_name, address=address, is_driver=is_driver)
         db.session.add(new_user)
         db.session.commit()
         return redirect(url_for('user_profile', user_id=new_user.id))
