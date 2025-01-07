@@ -17,16 +17,28 @@
       height: 600px;
     }
     /* Conteneur pour les instructions */
-    #route-infos {
+    #options-passagers {
+      float: left;
       width: 30%;
-      height: 500px;
-      float: right; /* à droite de la carte, par exemple */
-      overflow-y: auto; /* permet de scroller si les infos sont longues */
+      height: 600px;
       box-sizing: border-box;
       padding: 10px;
+      overflow-y: auto;
+      border-left: 1px solid #ccc;
     }
     .leaflet-routing-container {
       display: none !important;
+    }
+    .destination-item {
+      margin-bottom: 10px;
+    }
+    .active-button {
+      background-color: #4CAF50; /* vert */
+      color: white;
+    }
+    .inactive-button {
+      background-color: #f0f0f0; /* gris clair */
+      color: black;
     }
   </style>
 </head>
@@ -37,7 +49,12 @@
 <!-- Conteneur pour la carte -->
 <div id="map"></div>
 
-<div id="route-infos"></div>
+<div id="options-passagers">
+  <h2>Destinations</h2>
+  <div id="destinations-list"></div>
+</div>
+
+</div>
 
 
 <!-- Script Leaflet -->
@@ -50,7 +67,7 @@
 <!-- Script d'initialisation de la carte -->
 <script>
   // Initialiser la carte sur Paris, avec un zoom de 13
-  var map = L.map('map').setView([48.8566, 2.3522], 13);
+  var map = L.map('map').setView([48.8566, 2.3522], 10);
 
   // Ajouter le calque OSM
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -60,17 +77,15 @@
   }).addTo(map);
   // Exemple de tableau de lat-lng formant un chemin
 
-L.Routing.control({
+  var routingControl = L.Routing.control({
     // Points de départ et d’arrivée (waypoints)
     waypoints: [
-      L.latLng(48.8566, 2.3522),  // Paris
-      L.latLng(49.0097, 2.5479)   // Aéroport CDG
+      L.latLng(48.86234, 2.34472),  // Paris
+      L.latLng(48.956432, 2.338543)   // Aéroport CDG
     ],
 
     // (Optionnel) Autoriser le recalcul en glissant les marqueurs
     routeWhileDragging: true,
-    
-    
     
     
     //IMPORTANT
@@ -80,6 +95,90 @@ L.Routing.control({
     })*/
 
   }).addTo(map);
+
+  var destinations = [
+  { name: 'Aubervilliers',   coords: [48.91438, 2.38206],  active: false },
+      { name: 'Dugny',        coords: [48.95311, 2.41364],  active: false },
+      { name: 'Aubervilliers',   coords: [48.91438, 2.38206],  active: false },
+      { name: 'Gonesse',    coords: [48.9863, 2.4489], active: false },
+      
+    ];
+
+    function populateDestinationsList() {
+      var container = document.getElementById('destinations-list');
+      container.innerHTML = ''; // Nettoyer si besoin
+
+      destinations.forEach(function(dest, index) {
+        // Conteneur pour chaque destination
+        var div = document.createElement('div');
+        div.className = 'destination-item';
+
+        // Nom de la destination
+        var spanName = document.createElement('span');
+        spanName.textContent = dest.name + ' ';
+
+        // Bouton toggle
+        var button = document.createElement('button');
+        button.textContent = dest.active ? 'Retirer' : 'Ajouter';
+
+        // Style du bouton selon l'état actif/inactif
+        button.className = dest.active ? 'active-button' : 'inactive-button';
+
+        // Au clic, on bascule "dest.active"
+        button.addEventListener('click', function() {
+          // Inverser l'état
+          dest.active = !dest.active;
+          // Mettre à jour le texte et le style
+          button.textContent = dest.active ? 'Retirer' : 'Ajouter';
+          button.className = dest.active ? 'active-button' : 'inactive-button';
+
+          // Recalcule le chemin
+          updateRoute();
+        });
+
+        div.appendChild(spanName);
+        div.appendChild(button);
+        container.appendChild(div);
+      });
+    }
+
+    ////////////////////////////////
+    // 5) Construction du nouvel itinéraire
+    ////////////////////////////////
+    //   On conserve le point A (index 0) et B (dernier),
+    //   et on ajoute les points "active" au milieu.
+    ////////////////////////////////
+    function updateRoute() {
+  // 1. Récupérer les waypoints existants
+  var currentWaypoints = routingControl.getWaypoints();
+
+  // 2. Conserver le départ et l'arrivée
+  var startLatLng = currentWaypoints[0].latLng; 
+  var endLatLng = currentWaypoints[currentWaypoints.length - 1].latLng;
+
+  // 3. Construire un tableau de waypoints
+  var newWaypoints = [];
+  newWaypoints.push(startLatLng); // Départ
+  destinations.forEach(function(dest) {
+    if (dest.active) {
+      newWaypoints.push(L.latLng(dest.coords)); // Points intermédiaires actifs
+    }
+  });
+  newWaypoints.push(endLatLng); // Arrivée
+
+  // 4. Appliquer les nouveaux waypoints au contrôle de routage
+  routingControl.setWaypoints(newWaypoints);
+
+  // 5. Ajuster la vue pour afficher tout le trajet
+  var bounds = L.latLngBounds(newWaypoints); // Calcul des bornes
+  map.fitBounds(bounds); // Ajuste le zoom pour inclure toutes les bornes
+}
+
+
+    // Au chargement, on remplit la liste de destinations
+    populateDestinationsList();
+    // updateRoute() n'est pas nécessaire au démarrage
+    // car on a déjà le Paris->CDG initial
 
 
 </script>
