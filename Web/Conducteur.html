@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Ma carte Leaflet locale</title>
+<!-- Feuille de style Leaflet -->
+<link rel="stylesheet" href="./leaflet/leaflet.css">
+
+<!-- Feuille de style Leaflet Routing Machine -->
+<link rel="stylesheet" href="./leaflet-routing-machine/leaflet-routing-machine.css">
+
+
+  <style>
+    /* Donne une taille à la div qui contiendra la carte */
+    #map {
+      width: 1000px;
+      height: 1000px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Ma carte OpenStreetMap avec Leaflet (en local)</h1>
+
+<!-- Conteneur pour la carte -->
+<div id="map"></div>
+
+<!-- Script Leaflet -->
+<script src="./leaflet/leaflet.js"></script>
+
+<!-- Script Leaflet Routing Machine -->
+<script src="./leaflet-routing-machine/leaflet-routing-machine.js"></script>
+
+
+<!-- Script d'initialisation de la carte -->
+<script>
+  // Initialiser la carte sur Paris, avec un zoom de 13
+  var map = L.map('map').setView([48.8566, 2.3522], 13);
+
+  // Ajouter le calque OSM
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">'
+      + 'OpenStreetMap</a> contributors'
+  }).addTo(map);
+  // Exemple de tableau de lat-lng formant un chemin
+
+L.Routing.control({
+    // Points de départ et d’arrivée (waypoints)
+    waypoints: [
+      L.latLng(48.8566, 2.3522),  // Paris
+      L.latLng(49.0097, 2.5479)   // Aéroport CDG
+    ],
+
+    // (Optionnel) Autoriser le recalcul en glissant les marqueurs
+    routeWhileDragging: true
+
+    // (Optionnel) Préciser un service de routage personnalisé (OSRM, ORS, etc.)
+    // router: L.Routing.osrmv1({
+    //   serviceUrl: 'https://ton-serveur-osrm/route/v1'
+    // })
+
+  }).addTo(map);
+
+
+</script>
+
+</body>
+</html>
