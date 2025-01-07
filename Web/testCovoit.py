@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for,send_from_directory
+from flask import Flask, render_template, request, redirect, url_for,send_from_directory, flash
 from flask_sqlalchemy import SQLAlchemy
 import requests
 
@@ -36,7 +36,7 @@ def login():
     return render_template('login.html', error=None)
 
 
-@app.route('/Inscription', methods=['GET', 'POST'])
+@app.route('/signup', methods=['GET', 'POST'])
 def signup():
     """Page d'inscription avec formulaire."""
     if request.method == 'POST':
@@ -46,11 +46,20 @@ def signup():
         address = request.form['address']
         is_driver = True if request.form.get('is_driver') == 'on' else False
 
-        # Ajouter l'utilisateur à la base de données
-        new_user = User(id=numero,first_name=first_name, last_name=last_name, address=address, is_driver=is_driver)
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('user_profile', user_id=new_user.id))
+        # Vérifier si l'adresse est valide
+        lat, lon = geocode_address(address)
+
+        if lat and lon:
+            # Ajouter l'utilisateur à la base de données si l'adresse est valide
+            new_user = User(id=numero, first_name=first_name, last_name=last_name, address=address, is_driver=is_driver)
+            db.session.add(new_user)
+            db.session.commit()
+
+            flash('Inscription réussie !', 'success')
+            return redirect(url_for('user_profile', user_id=new_user.id))
+        else:
+            # Si l'adresse est invalide, afficher un message d'erreur
+            flash('Adresse invalide. Veuillez entrer une adresse valide.', 'danger')
 
     return render_template('testcovoit.html')
 
