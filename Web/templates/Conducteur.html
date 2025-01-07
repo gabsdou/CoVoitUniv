@@ -96,6 +96,13 @@
 
   }).addTo(map);
 
+  {% for route in routes %}
+            // Récupérer les coordonnées des trajets et afficher une polyline
+            var destination = [
+                [{{ route['name'] }}], // Départ
+                [{{ route['route'] }}]  // Arrivée
+            ];
+  {% endfor %}
   var destinations = [
   { name: 'Aubervilliers',   coords: [48.91438, 2.38206],  active: false },
       { name: 'Dugny',        coords: [48.95311, 2.41364],  active: false },
@@ -108,7 +115,7 @@
       var container = document.getElementById('destinations-list');
       container.innerHTML = ''; // Nettoyer si besoin
 
-      destinations.forEach(function(dest, index) {
+      destination.forEach(function(dest, index) {
         // Conteneur pour chaque destination
         var div = document.createElement('div');
         div.className = 'destination-item';
@@ -159,9 +166,9 @@
   // 3. Construire un tableau de waypoints
   var newWaypoints = [];
   newWaypoints.push(startLatLng); // Départ
-  destinations.forEach(function(dest) {
+  destination.forEach(function(dest) {
     if (dest.active) {
-      newWaypoints.push(L.latLng(dest.coords)); // Points intermédiaires actifs
+      newWaypoints.push(L.latLng(dest.route)); // Points intermédiaires actifs
     }
   });
   newWaypoints.push(endLatLng); // Arrivée
