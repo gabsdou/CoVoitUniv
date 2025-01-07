@@ -96,13 +96,7 @@
 
   }).addTo(map);
 
-  var destinations = [
-  { name: 'Aubervilliers',   coords: [48.91438, 2.38206],  active: false },
-      { name: 'Dugny',        coords: [48.95311, 2.41364],  active: false },
-      { name: 'Aubervilliers',   coords: [48.91438, 2.38206],  active: false },
-      { name: 'Gonesse',    coords: [48.9863, 2.4489], active: false },
-      
-    ];
+
 
         // On insère la variable `routes` du Python en JSON
         // Note l'utilisation de "|tojson|safe"
@@ -114,7 +108,7 @@
 
         // Exemple : Construire un "destinations" pour Leaflet
         // Imaginons que tu veuilles une liste {name, coords, active: false} :
-        let destinations = routesData.map(item => {
+        var destinations = routesData.map(item => {
             return {
                 name: item.name,
                 coords: item.route,  // ou item.route[0] ... selon ta structure
@@ -181,7 +175,7 @@
   newWaypoints.push(startLatLng); // Départ
   destinations.forEach(function(dest) {
     if (dest.active) {
-      newWaypoints.push(L.latLng(dest.route)); // Points intermédiaires actifs
+      newWaypoints.push(L.latLng(dest.coords)); // Points intermédiaires actifs
     }
   });
   newWaypoints.push(endLatLng); // Arrivée

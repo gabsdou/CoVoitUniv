@@ -21,13 +21,14 @@ class User(db.Model):
 def signup():
     """Page d'inscription avec formulaire."""
     if request.method == 'POST':
+        numero = request.form['numero étudiant']
         first_name = request.form['first_name']
         last_name = request.form['last_name']
         address = request.form['address']
         is_driver = True if request.form.get('is_driver') == 'on' else False
 
         # Ajouter l'utilisateur à la base de données
-        new_user = User(first_name=first_name, last_name=last_name, address=address, is_driver=is_driver)
+        new_user = User(numero,first_name=first_name, last_name=last_name, address=address, is_driver=is_driver)
         db.session.add(new_user)
         db.session.commit()
         return redirect(url_for('user_profile', user_id=new_user.id))
