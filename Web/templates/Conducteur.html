@@ -104,11 +104,31 @@
       
     ];
 
+        // On insère la variable `routes` du Python en JSON
+        // Note l'utilisation de "|tojson|safe"
+        let routesData = {{ routes | tojson | safe }};
+
+        // Maintenant, `routesData` est un tableau/objet JS
+        // qui contient tes routes passées depuis Python.
+        console.log("Routes depuis Python :", routesData);
+
+        // Exemple : Construire un "destinations" pour Leaflet
+        // Imaginons que tu veuilles une liste {name, coords, active: false} :
+        let destinations = routesData.map(item => {
+            return {
+                name: item.name,
+                coords: item.route,  // ou item.route[0] ... selon ta structure
+                active: false
+            };
+        });
+
+        console.log("Destinations pour Leaflet :", destinations);
+
     function populateDestinationsList() {
       var container = document.getElementById('destinations-list');
       container.innerHTML = ''; // Nettoyer si besoin
 
-      destination.forEach(function(dest, index) {
+      destinations.forEach(function(dest, index) {
         // Conteneur pour chaque destination
         var div = document.createElement('div');
         div.className = 'destination-item';
@@ -159,7 +179,7 @@
   // 3. Construire un tableau de waypoints
   var newWaypoints = [];
   newWaypoints.push(startLatLng); // Départ
-  destination.forEach(function(dest) {
+  destinations.forEach(function(dest) {
     if (dest.active) {
       newWaypoints.push(L.latLng(dest.route)); // Points intermédiaires actifs
     }
