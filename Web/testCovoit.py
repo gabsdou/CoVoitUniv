@@ -95,6 +95,13 @@ def user_profile(user_id):
                 'route': (other_coords),
             })
 
+    user_coords = geocode_address(user.address)
+    user = {
+        'name': user.first_name,
+        'address': user.address,
+        'coords': user_coords
+    }
+
     return render_template('Conducteur.html', user=user, routes=routes)
 
 

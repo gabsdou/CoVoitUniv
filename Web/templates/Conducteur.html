@@ -66,6 +66,7 @@
 
 <!-- Script d'initialisation de la carte -->
 <script>
+  let userData = {{ user | tojson | safe }};
   // Initialiser la carte sur Paris, avec un zoom de 13
   var map = L.map('map').setView([48.8566, 2.3522], 10);
 
@@ -80,8 +81,8 @@
   var routingControl = L.Routing.control({
     // Points de départ et d’arrivée (waypoints)
     waypoints: [
-      L.latLng(48.86234, 2.34472),  // Paris
-      L.latLng(48.956432, 2.338543)   // Aéroport CDG
+      userData.coords,  // Utilisateur
+      L.latLng(48.956432, 2.338543)   // Villetaneuse
     ],
 
     routeWhileDragging: false,
@@ -107,6 +108,7 @@
         });
 
         console.log("Destinations pour Leaflet :", destinations);
+        console.log("User pour Leaflet :", userData);
 
     function populateDestinationsList() {
       var container = document.getElementById('destinations-list');
