@@ -88,6 +88,7 @@ def conducteur(user_id):
     """Page du conducteur."""
     user = User.query.get_or_404(user_id)
     routes = []
+    notificationurl = url_for('static', filename='notification.png')
 
     # Adresse fixe (hardcodée)
     hardcoded_address = "99 Av. Jean Baptiste Clément, 93430 Villetaneuse"
@@ -114,7 +115,16 @@ def conducteur(user_id):
         'coords': user_coords
     }
 
-    return render_template('Conducteur.html', user=user, routes=routes)
+    return render_template('Conducteur.html', user=user, routes=routes, notificationurl=notificationurl)
+
+
+
+
+# @app.route('/save-trip', methods=['POST'])
+# TODO: Ajouter une route pour enregistrer un trajet
+
+# @app.route('/trip/<int:trip_id>')
+# TODO: Ajouter une route pour afficher un trajet (à voir avec la BDD)
 
 #
 # ROUTES POUR LEAFLET

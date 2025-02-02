@@ -43,6 +43,24 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+.destination-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* un item sur deux est sur fond gris */
+.destination-item:nth-child(odd) {
+  background-color: #DDD;
+}
+
+.destination-item button {
+  padding: 5px 10px;
+    width: auto;
+    font-size: 12px;
+}
+
 h1 {
     text-align: center;
     color: #333;
@@ -82,6 +100,7 @@ button {
     border-radius: 4px;
     cursor: pointer;
     font-size: 16px;
+    margin: 20px 0 10px;
 }
 
 button:hover {
@@ -101,9 +120,11 @@ button:hover {
 }
   </style>
 </head>
-<body>
-
+<header>
 <h1>Interface Conducteur</h1>
+<img src="{{ notificationurl }}" alt="Notification">
+</header>
+<body>
 
 <!-- Conteneur pour la carte -->
 <div id="map"></div>
@@ -111,6 +132,7 @@ button:hover {
 <div id="options-passagers">
   <h2>Destinations</h2>
   <div id="destinations-list"></div>
+  <button id="btn">Valider</button>
 </div>
 
 </div>
@@ -240,8 +262,40 @@ button:hover {
     // Au chargement, on remplit la liste de destinations
     populateDestinationsList();
 
+    // Au clic sur le bouton "Valider", on envoie à la page /trip le tableau des destinations actives
+    document.getElementById('btn').addEventListener('click', function() {
+      var selectedDestinations = destinations.filter(function(dest) {
+        return dest.active;
+      });
+
+      // Envoi de la liste des destinations actives
+      fetch('/save-trip', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(selectedDestinations)
+      })
+      .then(function(response) {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error('Erreur lors de la requête');
+      })
+      .then(function(data) {
+        console.log('Réponse du serveur :', data);
+        alert('Trajet enregistré !');
+      })
+      .catch(function(error) {
+        console.error('Erreur :', error);
+        alert('Erreur lors de l\'enregistrement du trajet');
+      });
+    });
+
+
 
 </script>
+
 
 
 </body>
