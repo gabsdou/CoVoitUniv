@@ -1,4 +1,5 @@
 Web/.venv
 Web/instance/users.db
 node_modules
+Web/package-lock.json
 instance
