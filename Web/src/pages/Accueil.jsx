@@ -8,6 +8,9 @@ function Accueil() {
       <Link to="/inscription" className="nav-link nav-main">
         S'inscrire
       </Link>
+      <Link to="/connexion" className="nav-link nav-main">
+        Se connecter
+      </Link>
       <p>
         Le covoiturage présente de nombreux avantages, notamment la réduction
         des coûts de transport, la diminution de l'empreinte carbone et la
