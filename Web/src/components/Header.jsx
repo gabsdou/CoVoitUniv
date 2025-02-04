@@ -19,7 +19,7 @@ function Header() {
     navigate("/"); // Redirige vers la page d'accueil
   };
   return (
-    
+
     <header className="header">
       <img src="/Covoit.png" alt="Logo Covoit" className="logo covoit" />
       <nav className="nav">
@@ -40,6 +40,9 @@ function Header() {
             Mon EDT
           </Link>
         )}
+        <Link to="/InterfaceConducteur" className="nav-link nav-conducteur">
+          Carte Conducteur
+        </Link>
       </nav>
       <img src="/USPN.png" alt="Logo USPN" className="logo uspn" />
     </header>
