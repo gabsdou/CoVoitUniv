@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import "./Inscription.css";
 
-function NousContacter() {
+function Inscription() {
   const [formData, setFormData] = useState({
     numero_etudiant: "",
     last_name: "",
@@ -27,7 +28,7 @@ function NousContacter() {
 
   return (
     <div className="page">
-      <h1>Nous Contacter</h1>
+      <h1>Inscription</h1>
       {!isSubmitted ? (
         <form onSubmit={handleSubmit} className="form-container">
           <div className="form-group">
@@ -97,4 +98,4 @@ function NousContacter() {
   );
 }
 
-export default NousContacter;
+export default Inscription;

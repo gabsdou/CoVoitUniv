@@ -11,9 +11,10 @@
   "dependencies": {
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "react-router-dom": "^7.1.5",
-    "react-scripts": "^3.0.1"
+    "react-scripts": "^5.0.0",
+    "react-router-dom": "7.1.1"
   },
+  "devDependencies": {},
   "browserslist": {
     "production": [
       ">0.2%",

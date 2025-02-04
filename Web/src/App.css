@@ -51,6 +51,16 @@
   font-weight: bold;
 }
 
+ {
+  border: 0px;
+  margin-left: 0px;
+}
+
 body {
   margin-top: 90px; /* Ajustez selon la hauteur du header */
+}
+
+.nav-main {
+  background-color: #927e6e;
+  font-size: 25px;
 }

@@ -10,8 +10,8 @@ function Header() {
         <Link to="/" className="nav-link nav-accueil">
           Accueil
         </Link>
-        <Link to="/nous-contacter" className="nav-link nav-contact">
-          Nous Contacter
+        <Link to="/inscription" className="nav-link nav-contact">
+          S'inscrire
         </Link>
         <Link to="/mon-edt" className="nav-link nav-edt">
           Mon EDT

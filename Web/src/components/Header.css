@@ -11,6 +11,7 @@
   box-sizing: border-box; /* Inclut le padding dans les dimensions */
   position: fixed; /* Reste en haut pendant le défilement */
   top: 0; /* Positionne le header tout en haut */
+  right: 0;
   z-index: 1000; /* S'assure que le header reste au-dessus des autres éléments */
 }
 
@@ -68,4 +69,9 @@
 .uspn {
   height: 60px; /* Hauteur des logos */
   width: auto; /* Garde le ratio d'aspect de l'image */
+  padding-right: 30px;
+}
+
+.nav-contact {
+  background-color: #927e6e;
 }
