@@ -5,6 +5,10 @@ import { Link } from "react-router-dom";
 import "./ConducteurMap.css"; // Ajouter le fichier CSS pour styliser la page ConducteurMap
 import "../leaflet-routing-machine/leaflet-routing-machine.css"; // Ajouter le fichier CSS pour styliser le routage
 import "../leaflet/leaflet.css"; // Ajouter le fichier CSS pour styliser la carte
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerIconRetina from 'leaflet/dist/images/marker-icon-2x.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
 
 const InterfaceConducteur = () => {
     useEffect(() => {
@@ -19,6 +23,20 @@ const InterfaceConducteur = () => {
 
       // Simuler userData (devrait venir du backend)
       let userData = { coords: [48.8566, 2.3522] };
+
+      const defaultIcon = L.icon({
+        iconUrl: markerIcon,
+        iconRetinaUrl: markerIconRetina,
+        shadowUrl: markerShadow,
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+
+    L.Marker.prototype.options.icon = defaultIcon;
+
+
 
       // Configuration du routage
       const routingControl = L.Routing.control({
