@@ -1,0 +1,25 @@
+/* Conteneur qui aligne les boutons de semaine */
+.weeks-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 20px auto;
+  }
+
+  /* Style d'un bouton de semaine */
+  .week-button {
+    background-color: #252b85; /* vert par exemple */
+    color: white;
+    font-size: 16px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  /* Effet hover */
+  .week-button:hover {
+    background-color: #5b3fd8; /* vert plus foncé */
+  }

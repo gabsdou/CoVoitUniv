@@ -17,22 +17,24 @@
     cursor: pointer;
     font-weight: bold;
   }
-
   .month-cell:hover {
     background-color: #ddd;
   }
 
-  .mois-container, .semaine-container, .jour-container {
+  .mois-container,
+  .semaine-container,
+  .jour-container {
     margin: 20px;
     text-align: center;
   }
 
-  ul.weeks-list, ul.days-list {
+  ul.weeks-list,
+  ul.days-list {
     list-style: none;
     padding: 0;
   }
-
-  ul.weeks-list li, ul.days-list li {
+  ul.weeks-list li,
+  ul.days-list li {
     background-color: #f3f3f3;
     margin: 10px auto;
     padding: 10px;
@@ -40,8 +42,8 @@
     border-radius: 8px;
     cursor: pointer;
   }
-
-  ul.weeks-list li:hover, ul.days-list li:hover {
+  ul.weeks-list li:hover,
+  ul.days-list li:hover {
     background-color: #ddd;
   }
 

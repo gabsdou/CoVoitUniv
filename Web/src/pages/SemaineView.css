@@ -1,0 +1,66 @@
+.semaine-container {
+    margin: 20px;
+    text-align: center;
+  }
+
+  .btn-back {
+    margin-bottom: 20px;
+    cursor: pointer;
+  }
+
+  .days-columns {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .day-column {
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+    width: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .day-column h3 {
+    margin-bottom: 10px;
+  }
+
+  .day-hours {
+    display: flex;
+    flex-direction: column;
+    max-height: 400px; /* Ajuste selon tes besoins */
+    overflow-y: auto;
+    width: 100%;
+  }
+
+  .hour-block {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 30px;
+    margin: 1px 0;
+    background-color: #eee;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+
+  .hour-block.highlight {
+    background-color: #aadfff;
+  }
+
+  .sliders {
+    margin-top: 10px;
+    width: 100%;
+    text-align: left;
+  }
+
+  .sliders label {
+    display: block;
+    margin: 5px 0 2px;
+    font-size: 12px;
+  }
