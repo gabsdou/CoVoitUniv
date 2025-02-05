@@ -34,8 +34,8 @@ function Connexion() {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("token", data.token); // Stocke le token JWT
-        navigate("/mon-edt"); // Redirige vers la page Profil après connexion réussie
+        localStorage.setItem("token", data.token);
+        navigate("/mon-edt");
       } else {
         setErrorMessage(data.error || "Erreur de connexion.");
       }
