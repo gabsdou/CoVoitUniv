@@ -147,7 +147,7 @@ button:hover {
 
 <!-- Script d'initialisation de la carte -->
 <script>
-  let userData = {{ user | tojson | safe }};
+  //let userData = {{ user | tojson | safe }};
   // Initialiser la carte sur Paris, avec un zoom de 13
   var map = L.map('map').setView([48.8566, 2.3522], 10);
 
@@ -181,7 +181,7 @@ button:hover {
   }).addTo(map);
 
 
-        let routesData = {{ routes | tojson | safe }};
+        //let routesData = {{ routes | tojson | safe }};
 
         var destinations = routesData.map(item => {
             return {

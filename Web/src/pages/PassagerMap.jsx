@@ -2,9 +2,9 @@ import React, { useEffect } from "react";
 import L from "leaflet";
 import "leaflet-routing-machine";
 import { Link } from "react-router-dom";
-import "./PassagerMap.css"; // Ajouter le fichier CSS pour styliser la page ConducteurMap
-import "../leaflet-routing-machine/leaflet-routing-machine.css"; // Ajouter le fichier CSS pour styliser le routage
-import "../leaflet/leaflet.css"; // Ajouter le fichier CSS pour styliser la carte
+import "./PassagerMap.css";
+import "../leaflet-routing-machine/leaflet-routing-machine.css";
+import "../leaflet/leaflet.css";
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerIconRetina from 'leaflet/dist/images/marker-icon-2x.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';

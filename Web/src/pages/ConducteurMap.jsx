@@ -2,9 +2,9 @@ import React, { useEffect } from "react";
 import L from "leaflet";
 import "leaflet-routing-machine";
 import { Link } from "react-router-dom";
-import "./ConducteurMap.css"; // Ajouter le fichier CSS pour styliser la page ConducteurMap
-import "../leaflet-routing-machine/leaflet-routing-machine.css"; // Ajouter le fichier CSS pour styliser le routage
-import "../leaflet/leaflet.css"; // Ajouter le fichier CSS pour styliser la carte
+import "./ConducteurMap.css";
+import "../leaflet-routing-machine/leaflet-routing-machine.css";
+import "../leaflet/leaflet.css";
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerIconRetina from 'leaflet/dist/images/marker-icon-2x.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -48,6 +48,11 @@ const InterfaceConducteur = () => {
         draggableWaypoints: true,
         addWaypoints: false,
         show: false,
+        //IMPORTANT
+        // (Optionnel) Préciser un service de routage personnalisé (OSRM, ORS, etc.)
+        /*router: L.Routing.osrmv1({
+        serviceUrl: 'https://router.project-osrm.org/route/v1/driving'
+        })*/
       }).addTo(map);
 
       return () => {
