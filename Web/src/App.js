@@ -29,7 +29,7 @@ function App() {
             <Route path="/mon-edt" element={isAuthenticated ? <MonEDT /> : <Navigate to = "/connexion"/>} />
             <Route path="/InterfaceConducteur" element={<ConducteurMap />} />
             <Route path="/InterfacePassager" element={<PassagerMap />} />
-            <Route path="Calendrier" element={<Calendrier />} />
+            <Route path="/Calendrier" element={<Calendrier />} />
           </Routes>
         </main>
         <Footer />
