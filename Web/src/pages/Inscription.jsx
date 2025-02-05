@@ -4,13 +4,15 @@ import "./Inscription.css";
 function Inscription() {
   const [formData, setFormData] = useState({
     numero_etudiant: "",
+    password: "",
     last_name: "",
     first_name: "",
     address: "",
-    is_driver: "",
+    is_driver: false, // Booléen pour la case à cocher
   });
 
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -20,10 +22,28 @@ function Inscription() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
-    setIsSubmitted(true);
+
+    try {
+      const response = await fetch("http://localhost:5000/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsSubmitted(true);
+      } else {
+        setErrorMessage(data.error || "Une erreur s'est produite.");
+      }
+    } catch (error) {
+      setErrorMessage("Impossible de contacter le serveur.");
+    }
   };
 
   return (
@@ -38,6 +58,17 @@ function Inscription() {
               id="numero_etudiant"
               name="numero_etudiant"
               value={formData.numero_etudiant}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="password">Mot de passe :</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
               onChange={handleChange}
               required
             />
@@ -85,13 +116,21 @@ function Inscription() {
               onChange={handleChange}
             />
           </div>
+          <div className="hasAccount">
+            Vous avez déjà un compte?
+            <br />
+            <a href="/connexion">Connectez-vous</a>
+          </div>
+
+          {errorMessage && <p className="error-message">{errorMessage}</p>}
+
           <button type="submit" className="submit-btn">
             Envoyer
           </button>
         </form>
       ) : (
         <div className="success-message">
-          <h2>Message envoyé !</h2>
+          <h2>Inscription réussie !</h2>
         </div>
       )}
     </div>
