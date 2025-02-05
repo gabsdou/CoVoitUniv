@@ -33,7 +33,7 @@
   .day-hours {
     display: flex;
     flex-direction: column;
-    max-height: 400px; /* Ajuste selon tes besoins */
+    max-height: 400px;
     overflow-y: auto;
     width: 100%;
   }
@@ -42,25 +42,27 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 30px;
+    height: 28px;
     margin: 1px 0;
     background-color: #eee;
     border-radius: 4px;
     font-size: 12px;
+    user-select: none; /* évite la sélection de texte */
+    cursor: default;
   }
 
+  /* Coloration quand l'heure est dans la plage */
   .hour-block.highlight {
     background-color: #aadfff;
   }
 
-  .sliders {
-    margin-top: 10px;
-    width: 100%;
-    text-align: left;
+  /* Les blocs "handle" (haut/bas) sont cliquables et on leur donne un curseur différent */
+  .hour-block.handle {
+    cursor: grab; /* main "grip" */
+    outline: 2px solid #333; /* ou un effet visuel pour signifier un "handle" */
   }
 
-  .sliders label {
-    display: block;
-    margin: 5px 0 2px;
-    font-size: 12px;
+  /* Optionnel : effet hover sur les handles */
+  .hour-block.handle:hover {
+    background-color: #ffa;
   }

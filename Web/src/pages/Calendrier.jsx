@@ -5,6 +5,8 @@ import isoWeek from "dayjs/plugin/isoWeek";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import MoisView from "./MoisView";
+import 'dayjs/locale/fr';
+dayjs.locale('fr');
 
 dayjs.extend(isoWeek);
 dayjs.extend(isSameOrAfter);
