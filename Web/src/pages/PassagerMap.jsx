@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import L from "leaflet";
 import "leaflet-routing-machine";
 import { Link } from "react-router-dom";
-import "./ConducteurMap.css"; // Ajouter le fichier CSS pour styliser la page ConducteurMap
+import "./PassagerMap.css"; // Ajouter le fichier CSS pour styliser la page ConducteurMap
 import "../leaflet-routing-machine/leaflet-routing-machine.css"; // Ajouter le fichier CSS pour styliser le routage
 import "../leaflet/leaflet.css"; // Ajouter le fichier CSS pour styliser la carte
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -10,7 +10,7 @@ import markerIconRetina from 'leaflet/dist/images/marker-icon-2x.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
 
-const InterfaceConducteur = () => {
+const InterfacePassager = () => {
     useEffect(() => {
       // Initialisation de la carte
       const map = L.map("map").setView([48.8566, 2.3522], 10);
@@ -65,9 +65,9 @@ const InterfaceConducteur = () => {
         <div id="map" style={{ width: "1000px", height: "750px" }}></div>
 
         {/* Conteneur des options passagers */}
-        <div id="options-passagers">
-          <h2>Passagers Disponibles</h2>
-          <div id="passagers-list"></div>
+        <div id="options-conducteur">
+          <h2>Conducteurs Possibles</h2>
+          <div id="conducteur-list"></div>
           <button id="btn">Valider</button>
         </div>
       </div>
@@ -75,11 +75,11 @@ const InterfaceConducteur = () => {
   };
 
 
-  function ConducteurMap() {
+  function PassagerMap() {
     return (
       <div>
-        <InterfaceConducteur />
+        <InterfacePassager />
       </div>
     );
   }
-export default ConducteurMap;
+export default PassagerMap;

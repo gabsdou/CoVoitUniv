@@ -42,10 +42,13 @@ function Header() {
           </Link>
           <Link to="/InterfaceConducteur" className="nav-link nav-conducteur">
           Carte Conducteur
+          </Link>
+          <Link to="/InterfacePassager" className="nav-link nav-passager">
+          Carte Passager
         </Link>
         </>
         )}
-        
+
       </nav>
       <img src="/USPN.png" alt="Logo USPN" className="logo uspn" />
     </header>

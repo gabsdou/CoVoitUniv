@@ -7,6 +7,7 @@ import Inscription from "./pages/Inscription";
 import Connexion from "./pages/Connexion";
 import MonEDT from "./pages/MonEDT";
 import ConducteurMap from "./pages/ConducteurMap";
+import PassagerMap from "./pages/PassagerMap";
 import "./App.css";
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
             <Route path ="/connexion" element={<Connexion />} />
             <Route path="/mon-edt" element={isAuthenticated ? <MonEDT /> : <Navigate to = "/connexion"/>} />
             <Route path="/InterfaceConducteur" element={<ConducteurMap />} />
+            <Route path="/InterfacePassager" element={<PassagerMap />} />
           </Routes>
         </main>
         <Footer />
