@@ -8,6 +8,7 @@ import Connexion from "./pages/Connexion";
 import MonEDT from "./pages/MonEDT";
 import ConducteurMap from "./pages/ConducteurMap";
 import PassagerMap from "./pages/PassagerMap";
+import Calendrier from "./pages/Calendrier";
 import "./App.css";
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
             <Route path="/mon-edt" element={isAuthenticated ? <MonEDT /> : <Navigate to = "/connexion"/>} />
             <Route path="/InterfaceConducteur" element={<ConducteurMap />} />
             <Route path="/InterfacePassager" element={<PassagerMap />} />
+            <Route path="Calendrier" element={<Calendrier />} />
           </Routes>
         </main>
         <Footer />
