@@ -35,13 +35,13 @@ function Inscription() {
       });
 
       const data = await response.json();
-
       if (response.ok) {
         setIsSubmitted(true);
       } else {
-        setErrorMessage(data.error || "Une erreur s'est produite.");
+        setErrorMessage(result.message || "Une erreur s'est produite.");
       }
     } catch (error) {
+      console.error("An error occurred:", error);
       setErrorMessage("Impossible de contacter le serveur.");
     }
   };

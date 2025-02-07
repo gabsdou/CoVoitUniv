@@ -35,11 +35,12 @@ function Connexion() {
 
       if (response.ok) {
         localStorage.setItem("token", data.token);
-        navigate("/mon-edt");
+        navigate("/calendrier");
       } else {
         setErrorMessage(data.error || "Erreur de connexion.");
       }
     } catch (error) {
+      console.error("An error occurred:", error);
       setErrorMessage("Impossible de contacter le serveur.");
     }
   };
