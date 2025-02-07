@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 function Accueil() {
   return (
     <div className="page">
-      <h1>Bienvenue sur notre site</h1>
+      <h1>CoVoitUniv</h1>
       <Link to="/inscription" className="nav-link nav-main">
         S'inscrire
       </Link>

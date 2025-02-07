@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <title>Interface Conducteur</title>
 <!-- Feuille de style Leaflet -->
-<link rel="stylesheet" href="/leaflet/leaflet.css">
+<link rel="stylesheet" href="../src/leaflet/leaflet.css">
 
 <!-- Feuille de style Leaflet Routing Machine -->
-<link rel="stylesheet" href="/leaflet-routing-machine/leaflet-routing-machine.css">
+<link rel="stylesheet" href="../src/leaflet-routing-machine/leaflet-routing-machine.css">
 
 
   <style>
@@ -139,15 +139,15 @@ button:hover {
 
 
 <!-- Script Leaflet --><script src="/leaflet/leaflet.js"></script>
-<script src="/leaflet/leaflet.js"></script>
+<script src="../src/leaflet/leaflet.js"></script>
 
 <!-- Script Leaflet Routing Machine -->
-<script src="/leaflet-routing-machine/leaflet-routing-machine.js"></script>
+<script src="../src/leaflet-routing-machine/leaflet-routing-machine.js"></script>
 
 
 <!-- Script d'initialisation de la carte -->
 <script>
-  //let userData = {{ user | tojson | safe }};
+  let userData = {{ user | tojson | safe }};
   // Initialiser la carte sur Paris, avec un zoom de 13
   var map = L.map('map').setView([48.8566, 2.3522], 10);
 
@@ -181,7 +181,7 @@ button:hover {
   }).addTo(map);
 
 
-        //let routesData = {{ routes | tojson | safe }};
+        let routesData = {{ routes | tojson | safe }};
 
         var destinations = routesData.map(item => {
             return {

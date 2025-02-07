@@ -21,17 +21,17 @@ def login():
     """Page de connexion."""
     if request.method == 'POST':
         numero = request.form['numero_etudiant']
-        
+
         # Vérifier si l'utilisateur existe dans la base de données
         user = User.query.filter_by(id=numero).first()
-        
+
         if user:
             # Si l'utilisateur existe, rediriger vers son profil
             return redirect(url_for('profile', user_id=user.id))
         else:
             # Si l'utilisateur n'existe pas, afficher un message d'erreur ou un bouton vers l'inscription
             return redirect(url_for('signup'))
-    
+
     return render_template('login.html', error=None)
 
 
@@ -100,7 +100,7 @@ def conducteur(user_id):
         # Géocodage des adresses des utilisateurs
         print(other_user.address)
         other_coords = geocode_address(other_user.address) if other_user else None
-        
+
         # Calculer les trajets possibles
         if other_coords:
             routes.append({
@@ -132,11 +132,11 @@ def conducteur(user_id):
 
 @app.route('/leaflet/<path:filename>')
 def leaflet_static(filename):
-    return send_from_directory('leaflet', filename)
+    return send_from_directory('src/leaflet', filename)
 
 @app.route('/leaflet-routing-machine/<path:filename>')
 def leaflet_routing_machine_static(filename):
-    return send_from_directory('leaflet-routing-machine', filename)
+    return send_from_directory('src/leaflet-routing-machine', filename)
 
 
 #
@@ -155,13 +155,13 @@ def geocode_address(address):
         if data:
             lat = data[0].get('lat')
             lon = data[0].get('lon')
-            
+
             # Vérifier si lat et lon sont valides (pas de None ou 'undefined')
             if lat is not None and lon is not None:
                 try:
                     lat = float(lat)
                     lon = float(lon)
-                    
+
                     # Vérifier que ce sont bien des nombres avant de les arrondir
                     if isinstance(lat, (int, float)) and isinstance(lon, (int, float)):
                         lat = round(lat, 6)
