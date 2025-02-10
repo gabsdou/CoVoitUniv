@@ -21,8 +21,31 @@ const InterfaceConducteur = () => {
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(map);
 
-      // Simuler userData (devrait venir du backend)
-      let userData = { coords: [48.8566, 2.3522] };
+
+      // MOYEN SUR, FAUT TESTER TOUT CA
+
+      // Récupération de UserData (Coordonnées de l'utilisateur)
+      let userData = fetch("http://localhost:3000/user/")  // TODO: récupérer le numéro de l'utilisateur connecté
+
+      // Récupération des passagers disponibles
+      let passagers = fetch("http://localhost:3000/passengers/"); // TODO: récupérer le numéro de l'utilisateur connecté
+
+      // Traduire le json en objet
+      userData = JSON.parse(userData);
+      passagers = JSON.parse(passagers);
+
+      // Ajouter un marqueur pour l'utilisateur
+      L.marker(userData.coords).addTo(map).bindPopup("Vous êtes ici");
+
+      // Ajouter tous les passagers disponibles à la liste
+      const passagersList = document.getElementById("passagers-list");
+      passagers.forEach((passager) => {
+        const passagerElement = document.createElement("div");
+        passagerElement.innerHTML = `<p>${passager.nom} ${passager.prenom}</p>`;
+        passagersList.appendChild(passagerElement);
+      });
+      
+      // MOYEN SUR, FAUT TESTER TOUT CA
 
       const defaultIcon = L.icon({
         iconUrl: markerIcon,

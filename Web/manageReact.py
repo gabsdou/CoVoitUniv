@@ -52,8 +52,28 @@ def login():
         return jsonify({'token': token, 'status': 'success'})
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
+    
+# MOYEN SUR FAUT TESTER TOUT CA AVEC LE FRONT
+
+@app.route('/user/<int:id>', methods=['GET'])
+def user(id):
+    user = User.query.filter_by(id=id).first()
+    if user:
+        return jsonify({'first_name': user.first_name, 'last_name': user.last_name, 'address': user.address, 'is_driver': user.is_driver})
+    else:
+        return jsonify({'error': 'User not found'}), 404
+
+@app.route('/passengers/<int:id>', methods=['GET'])
+def passengers(id):
+    users = User.query.filter_by(id!=id).all()
+    passengers = []
+    for user in users:
+        if not user.is_driver:
+            passengers.append({'first_name': user.first_name, 'last_name': user.last_name, 'address': user.address})
+    return jsonify(passengers)
+
+# MOYEN SUR FAUT TESTER TOUT CA AVEC LE FRONT
 
 if __name__ == '__main__':
     with app.app_context():  # Crée un contexte de l'application
-        db.create_all()  # Crée la base de données si elle n'existe pas encore
-    app.run(debug=True)
+        db.create_all()  # Crée la base de données si elle n'existe pas encore    app.run(debug=True)
