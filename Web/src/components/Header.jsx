@@ -1,23 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 import "./Header.css"; // Ajouter le fichier CSS pour styliser le header
 
 function Header() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Vérifier si un token est présent au chargement du composant
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsAuthenticated(!!token); // Convertit en booléen (true si token existe)
-  }, []);
-
-  // Fonction de déconnexion
   const handleLogout = () => {
-    localStorage.removeItem("token"); // Supprime le token
-    setIsAuthenticated(false);
-    navigate("/"); // Redirige vers la page d'accueil
+    logout();
+    navigate('/');
+
   };
+
   return (
 
     <header className="header">
@@ -37,16 +32,19 @@ function Header() {
           </>
         ) : (
           <>
-          <Link to="/mon-edt" className="nav-link nav-edt">
+            <Link to="/calendrier" className="nav-link nav-edt">
             Mon EDT
-          </Link>
-          <Link to="/InterfaceConducteur" className="nav-link nav-conducteur">
-          Carte Conducteur
-          </Link>
-          <Link to="/InterfacePassager" className="nav-link nav-passager">
-          Carte Passager
-        </Link>
-        </>
+            </Link>
+            <Link to="/InterfaceConducteur" className="nav-link nav-conducteur">
+            Carte Conducteur
+            </Link>
+            <Link to="/InterfacePassager" className="nav-link nav-passager">
+            Carte Passager
+            </Link>
+            <button onClick={handleLogout} className="nav-link nav-contact">
+              Se déconnecter
+            </button>
+          </>
         )}
 
       </nav>

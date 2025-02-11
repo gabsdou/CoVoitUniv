@@ -7,17 +7,15 @@ import Inscription from "./pages/Inscription";
 import Connexion from "./pages/Connexion";
 import MonEDT from "./pages/MonEDT";
 import ConducteurMap from "./pages/ConducteurMap";
+import { AuthProvider } from "./context/AuthContext";
 import PassagerMap from "./pages/PassagerMap";
 import Calendrier from "./pages/Calendrier";
 import "./App.css";
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsAuthenticated(!!token); // Convertit en booléen (true si token existe)
-  }, []);
+
   return (
+    <AuthProvider>
     <Router>
       <div className="App">
         <Header />
@@ -26,7 +24,6 @@ function App() {
             <Route path="/" element={<Accueil />} />
             <Route path="/inscription" element={<Inscription />} />
             <Route path ="/connexion" element={<Connexion />} />
-            <Route path="/mon-edt" element={isAuthenticated ? <MonEDT /> : <Navigate to = "/connexion"/>} />
             <Route path="/InterfaceConducteur" element={<ConducteurMap />} />
             <Route path="/InterfacePassager" element={<PassagerMap />} />
             <Route path="/Calendrier" element={<Calendrier />} />
@@ -35,6 +32,7 @@ function App() {
         <Footer />
       </div>
     </Router>
+    </AuthProvider>
   );
 }
 
