@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom"; // Pour rediriger après connexion
+import { AuthContext } from "../context/AuthContext";
 import "./Inscription.css";
 
 function Connexion() {
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     numero_etudiant: "",
     password: "",
@@ -34,7 +36,8 @@ function Connexion() {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("token", data.token);
+        //localStorage.setItem("token", data.token);
+        login(data.token);
         navigate("/calendrier");
       } else {
         setErrorMessage(data.error || "Erreur de connexion.");

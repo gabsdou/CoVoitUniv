@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, jsonify # type: ignore
+from flask_sqlalchemy import SQLAlchemy # type: ignore
+from flask_cors import CORS # type: ignore
 import requests
 
 app = Flask(__name__)
@@ -38,7 +38,7 @@ def signup():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    
+
     print("Received data for login:", data)  # Debug print
 
     numero = data['numero_etudiant']
@@ -52,7 +52,7 @@ def login():
         return jsonify({'token': token, 'status': 'success'})
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
-    
+
 # MOYEN SÛR FAUT TESTER TOUT CA AVEC LE FRONT
 
 @app.route('/user/<int:id>', methods=['GET'])
@@ -78,3 +78,4 @@ if __name__ == '__main__':
     with app.app_context():  # Crée un contexte de l'application
         db.create_all()  # Crée la base de données si elle n'existe pas encore    app.run(debug=True)
     app.run(debug=True)
+    
