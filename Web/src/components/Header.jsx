@@ -38,9 +38,7 @@ function Header() {
             <Link to="/InterfaceConducteur" className="nav-link nav-conducteur">
             Carte Conducteur
             </Link>
-            <Link to="/InterfacePassager" className="nav-link nav-passager">
-            Carte Passager
-            </Link>
+
             <button onClick={handleLogout} className="nav-link nav-contact">
               Se déconnecter
             </button>

@@ -4,8 +4,16 @@
   }
 
   .btn-back {
-    margin-bottom: 20px;
+    background-color: #293358; /* vert par exemple */
+    color: rgb(255, 255, 255);
+    font-size: 16px;
+    padding: 12px 20px;
+    border: none;
+    margin-left: 25%;
+    margin-right: 25%;
+    border-radius: 8px;
     cursor: pointer;
+    transition: background-color 0.2s ease;
   }
 
   .days-columns {

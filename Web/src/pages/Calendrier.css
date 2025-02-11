@@ -1,88 +1,109 @@
 .calendrier-container {
-    margin: 20px;
-    text-align: center;
-  }
+  margin: 20px;
+  text-align: center;
+}
 
-  .months-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    margin-top: 30px;
-  }
+/* On peut passer en grid pour un affichage plus souple */
+.months-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 20px; /* Espace entre chaque bouton */
+  max-width: 600px; /* Largeur max si vous voulez centrer */
+  margin: 0 auto; /* Centre le grid dans la page */
+  padding: 2rem 1rem; /* Espace autour du contenu */
+}
 
-  .month-cell {
-    background-color: #f3f3f3;
-    padding: 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-  }
-  .month-cell:hover {
-    background-color: #ddd;
-  }
+/* Boutons de mois */
+.month-box {
+  background-color: #0B0B2E; /* Couleur de fond initiale */
+  color: white;
+  padding: 1rem; /* Espacement intérieur */
+  font-size: 1.2em;
+  border-radius: 8px; /* Bords arrondis */
+  text-align: center;
+  cursor: pointer; /* Curseur en mode "cliquable" */
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  /* transition permet un effet fluide au survol */
+}
 
-  .mois-container,
-  .semaine-container,
-  .jour-container {
-    margin: 20px;
-    text-align: center;
-  }
+/* Effet au survol */
+.month-box:hover {
+  background-color: #23235A; /* Couleur un peu plus claire ou plus foncée */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
 
-  ul.weeks-list,
-  ul.days-list {
-    list-style: none;
-    padding: 0;
-  }
-  ul.weeks-list li,
-  ul.days-list li {
-    background-color: #f3f3f3;
-    margin: 10px auto;
-    padding: 10px;
-    width: 200px;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-  ul.weeks-list li:hover,
-  ul.days-list li:hover {
-    background-color: #ddd;
-  }
+/* Exemple si vous souhaitez un effet de clic (optionnel) */
+.month-box:active {
+  background-color: #33337A;
+  transform: scale(0.98); /* Effet de “pressage” */
+}
 
-  .btn-back {
-    cursor: pointer;
-    margin-bottom: 20px;
-  }
+/* Styles existants pour les autres conteneurs */
+.mois-container,
+.semaine-container,
+.jour-container {
+  margin: 20px;
+  text-align: center;
+}
 
-  .timeline {
-    display: flex;
-    flex-wrap: wrap;
-    max-width: 600px;
-    margin: 20px auto;
-  }
+/* Listes et hover pour semaines/jours */
+ul.weeks-list,
+ul.days-list {
+  list-style: none;
+  padding: 0;
+}
 
-  .hour {
-    width: 50px;
-    text-align: center;
-    padding: 5px;
-    margin: 2px;
-    background-color: #eee;
-    border-radius: 4px;
-  }
+ul.weeks-list li,
+ul.days-list li {
+  background-color: #f3f3f3;
+  margin: 10px auto;
+  padding: 10px;
+  width: 200px;
+  border-radius: 8px;
+  cursor: pointer;
+}
 
-  .hour.selected {
-    background-color: #aadfff;
-  }
+ul.weeks-list li:hover,
+ul.days-list li:hover {
+  background-color: #ddd;
+}
 
-  .controls {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-  }
+.btn-back {
+  cursor: pointer;
+  margin-bottom: 20px;
+}
 
-  .control {
-    margin: 0 20px;
-  }
+.timeline {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 600px;
+  margin: 20px auto;
+}
 
-  .arrow {
-    margin: 0 10px;
-    cursor: pointer;
-  }
+.hour {
+  width: 50px;
+  text-align: center;
+  padding: 5px;
+  margin: 2px;
+  background-color: #eee;
+  border-radius: 4px;
+}
+
+.hour.selected {
+  background-color: #aadfff;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.control {
+  margin: 0 20px;
+}
+
+.arrow {
+  margin: 0 10px;
+  cursor: pointer;
+}

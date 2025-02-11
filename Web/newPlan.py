@@ -1,5 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, jsonify # type: ignore
+from flask_sqlalchemy import SQLAlchemy # type: ignore
 import requests
 
 app = Flask(__name__)

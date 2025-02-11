@@ -7,8 +7,12 @@ function SemaineView({ week, onBack }) {
    * - startHour : heure de début (ex: 9)
    * - endHour : heure de fin (exclusif, ex: 17 => plage colorée = 9h à 16h inclus)
    */
+  const weekdays = week.days.filter(date => {
+    const dayOfWeek = new Date(date).getDay();
+    return dayOfWeek !== 0 && dayOfWeek !== 6; // Exclure dimanche (0) et samedi (6)
+  });
   const [daysHours, setDaysHours] = useState(
-    week.days.map(date => ({
+    weekdays.map(date => ({
       date,
       startHour: 9,
       endHour: 17,

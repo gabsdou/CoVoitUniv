@@ -5,10 +5,8 @@ import Footer from "./components/Footer";
 import Accueil from "./pages/Accueil";
 import Inscription from "./pages/Inscription";
 import Connexion from "./pages/Connexion";
-import MonEDT from "./pages/MonEDT";
 import ConducteurMap from "./pages/ConducteurMap";
 import { AuthProvider } from "./context/AuthContext";
-import PassagerMap from "./pages/PassagerMap";
 import Calendrier from "./pages/Calendrier";
 import "./App.css";
 
@@ -25,7 +23,6 @@ function App() {
             <Route path="/inscription" element={<Inscription />} />
             <Route path ="/connexion" element={<Connexion />} />
             <Route path="/InterfaceConducteur" element={<ConducteurMap />} />
-            <Route path="/InterfacePassager" element={<PassagerMap />} />
             <Route path="/Calendrier" element={<Calendrier />} />
           </Routes>
         </main>

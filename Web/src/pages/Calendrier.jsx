@@ -6,6 +6,7 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import MoisView from "./MoisView";
 import 'dayjs/locale/fr';
+import "./Calendrier.css";
 dayjs.locale('fr');
 
 dayjs.extend(isoWeek);
@@ -59,22 +60,13 @@ function Calendrier2025() {
   return (
     <div>
       <h1>Calendrier Année {YEAR}</h1>
-      <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+      <div className="months-container">
         {MONTH_NAMES.map((m, i) => (
           <div
             key={i}
             onClick={() => setSelectedMonth(i)}
-            style={{
-              width: "120px",
-              height: "80px",
-              backgroundColor: "#f3f3f3",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "10px",
-              borderRadius: "8px",
-              cursor: "pointer"
-            }}
+            id={`month-${i}`}
+            className="month-box"
           >
             {m}
           </div>

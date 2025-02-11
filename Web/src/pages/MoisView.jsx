@@ -1,10 +1,12 @@
 // MoisView.jsx
 import React, { useState } from "react";
 import SemaineView from "./SemaineView";
+import "./MoisView.css";
 
 function MoisView({ year, monthData, onBack }) {
   const [selectedWeek, setSelectedWeek] = useState(null);
   const { monthName, weeks } = monthData;
+
 
   if (selectedWeek) {
     return (
@@ -14,10 +16,13 @@ function MoisView({ year, monthData, onBack }) {
       />
     );
   }
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('fr-FR', { month: 'long', day: 'numeric' });
+  }
 
   return (
     <div>
-        <button onClick={onBack}>← Retour à l'année</button>
+        <button className="BackButton" onClick={onBack}>← Retour à l'année</button>
         <h2>{monthName} {year}</h2>
         <div className="weeks-grid">
           {weeks.map((week) => (
@@ -26,7 +31,7 @@ function MoisView({ year, monthData, onBack }) {
               className="week-button"
               onClick={() => setSelectedWeek(week)}
             >
-              Semaine {week.weekNumber}
+              Semaine du {formatDate(week.days[0])} au {formatDate(week.days[6])}
             </button>
           ))}
         </div>
