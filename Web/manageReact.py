@@ -78,4 +78,3 @@ if __name__ == '__main__':
     with app.app_context():  # Crée un contexte de l'application
         db.create_all()  # Crée la base de données si elle n'existe pas encore    app.run(debug=True)
     app.run(debug=True)
-    

@@ -39,8 +39,10 @@ def loadWeek(cal, monday, friday):
             print("END:", dtend)
     
 
-cal = createCalendar()
 
-addEvent(cal,"test", datetime.now(), "this is a summary", "this is a desciption", "this will be a location")
+if __name__ == "__main__":
+    cal = createCalendar()
 
-loadWeek(cal, None, None)
+    addEvent(cal,"test", datetime.now(), "this is a summary", "this is a desciption", "this will be a location")
+
+    loadWeek(cal, None, None)
