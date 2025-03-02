@@ -17,6 +17,14 @@ class User(db.Model):
     address = db.Column(db.String(200), nullable=False)
     is_driver = db.Column(db.Boolean, default=False)
 
+class CalendarEntry(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    week_number = db.Column(db.Integer, nullable=False)
+    date = db.Column(db.String(10), nullable=False)
+    start_hour = db.Column(db.Integer, nullable=False)
+    end_hour = db.Column(db.Integer, nullable=False)
+
+
 @app.route('/signup', methods=['POST'])
 def signup():
     # Fetch the data from the json sent by react
@@ -73,9 +81,27 @@ def passengers(id):
     return jsonify(passengers)
 
 # MOYEN SÛR FAUT TESTER TOUT CA AVEC LE FRONT
+@app.route('/save_calendar', methods=['POST'])
+def save_calendar():
+    data = request.get_json()
+    week_number = data.get("weekNumber")
+    days = data.get("days", [])
+
+    for day in days:
+        new_entry = CalendarEntry(
+            week_number=week_number,
+            date=day["date"],
+            start_hour=day["startHour"],
+            end_hour=day["endHour"]
+        )
+        db.session.add(new_entry)
+
+    db.session.commit()
+    return jsonify({"message": "Données enregistrées avec succès"})
+
+
 
 if __name__ == '__main__':
     with app.app_context():  # Crée un contexte de l'application
         db.create_all()  # Crée la base de données si elle n'existe pas encore    app.run(debug=True)
     app.run(debug=True)
-    

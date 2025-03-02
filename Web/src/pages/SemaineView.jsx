@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./SemaineView.css";
 
+
 function SemaineView({ week, onBack }) {
   /**
    * daysHours = tableau d’objets { date, startHour, endHour } pour chaque jour
@@ -18,7 +19,48 @@ function SemaineView({ week, onBack }) {
       endHour: 17,
     }))
   );
+  const saveCalendarData = () => {
+    if (!week) {
+      console.error("La variable week est undefined !");
+      return;
+    }
 
+    const calendarData = {
+      weekNumber: week.weekNumber,
+      days: daysHours
+    };
+
+    const jsonData = JSON.stringify(calendarData, null, 2);
+
+    const blob = new Blob([jsonData], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `calendrier_semaine_${week.weekNumber}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  const sendDataToBackend = async () => {
+    const calendarData = {
+      weekNumber: week.weekNumber,
+      days: daysHours
+    };
+
+    try {
+      const response = await fetch("http://localhost:5000/save_calendar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(calendarData),
+      });
+
+      const data = await response.json();
+      alert(data.message);
+    } catch (error) {
+      console.error("Erreur lors de l'envoi des données:", error);
+    }
+  };
   /**
    * État pour savoir si on est en train de « drag » le haut ou le bas
    * - dayIndex : index du jour dans daysHours
@@ -144,6 +186,13 @@ function SemaineView({ week, onBack }) {
           );
         })}
       </div>
+      <button onClick={saveCalendarData} className="btn-save">
+  Enregistrer les horaires
+</button>
+<button onClick={sendDataToBackend} className="btn-send">
+  Envoyer au serveur
+</button>
+
     </div>
   );
 }
