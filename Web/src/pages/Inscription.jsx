@@ -52,11 +52,11 @@ function Inscription() {
       {!isSubmitted ? (
         <form onSubmit={handleSubmit} className="form-container">
           <div className="form-group">
-            <label htmlFor="numero_etudiant">Email :</label>
+            <label htmlFor="email">Email :</label>
             <input
-              type="text"
-              id="numero_etudiant"
-              name="numero_etudiant"
+              type="email"
+              id="email"
+              name="email"
               value={formData.email}
               onChange={handleChange}
               required
