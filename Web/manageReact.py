@@ -157,9 +157,10 @@ def save_calendar():
     #   }
     # }
 
+
     user_id = data.get('user_id')
     calendar_changes = data.get('calendar_changes')
-
+    print("Received calendar data:", calendar_changes)  # Debug
     if not user_id or not calendar_changes:
         return jsonify({'error': 'Missing user_id or calendar_changes'}), 400
 
