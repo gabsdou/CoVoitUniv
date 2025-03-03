@@ -272,107 +272,124 @@ def request_ride():
 
     return jsonify({"message": "Ride request created", "ride_request_id": ride_request.id}), 200
 
+
 @app.route('/findPassengers', methods=['GET'])
 def find_passengers():
     """
     For a DRIVER to find potential passengers matching a given day/time window
-    (±30 minutes tolerance) and within 60 min driving distance.
-    
+    (±30 minutes tolerance), within 60 min total detour from:
+       Driver's address --> Passenger address --> Destination address
+
     Query parameters:
       - driver_id: the driver's User.id (UUID)
       - day: e.g., "2025-02-03"
+      - destination: The driver's final address (string)
     """
     driver_id = request.args.get('driver_id')
     day = request.args.get('day')
+    destination_address = request.args.get('destination')
 
-    if not driver_id or not day:
-        return jsonify({"error": "Missing driver_id or day"}), 400
+    # Basic validation
+    if not driver_id or not day or not destination_address:
+        return jsonify({"error": "Missing required parameters (driver_id, day, destination)"}), 400
 
-    # Fetch the driver from the DB
+    # Fetch driver from DB
     driver = User.query.filter_by(id=driver_id).first()
     if not driver:
         return jsonify({"error": "Driver not found"}), 404
 
-    # Parse the driver's calendar (assume JSON with day-based entries)
+    # Parse driver's calendar (assume JSON with day-based entries)
     driver_calendar = {}
     if driver.calendar:
         try:
             driver_calendar = json.loads(driver.calendar)
         except (json.JSONDecodeError, TypeError):
-            pass  # if it fails, treat as empty
+            pass  # If fails, treat as empty
 
     # Attempt to get the driver's availability for the requested 'day'
     driver_day_data = driver_calendar.get(day)
     if not driver_day_data:
-        # If the driver has no data for that day, no matches
+        # If the driver has no data for that day, return no matches
         return jsonify({"possible_passengers": []}), 200
 
-    # Extract the driver's start/end for the day
-    # e.g. driver_day_data = {"startHour": 9, "endHour": 17}
     driver_start_hour = driver_day_data.get("startHour")
     driver_end_hour   = driver_day_data.get("endHour")
-
-    # If driver has incomplete data, return nothing
     if driver_start_hour is None or driver_end_hour is None:
         return jsonify({"possible_passengers": []}), 200
 
-    # Query RideRequest for all unmatched requests for the same 'day'
-    ride_requests = RideRequest.query.filter_by(day=day, matched_driver_id=None).all()
-
-    # Prepare driver coords
+    # Geocode the driver's address (start) and destination
     driver_coords = geocode_address(driver.address)
     if not driver_coords:
-        return jsonify({"error": "Driver address invalid"}), 400
+        return jsonify({"error": "Driver's address invalid"}), 400
 
+    destination_coords = geocode_address(destination_address)
+    if not destination_coords:
+        return jsonify({"error": "Destination address invalid"}), 400
+
+    # Query all unmatched passenger ride requests for the same day
+    ride_requests = RideRequest.query.filter_by(day=day, matched_driver_id=None).all()
+
+    # 30 min tolerance (in hours)
+    time_tolerance = 0.5
     possible_passengers = []
-    time_tolerance = 0.5  # 0.5 hour = 30 minutes
 
     for request_obj in ride_requests:
-        # Compare passenger times with driver times
-        p_start = request_obj.start_hour  # passenger start
-        p_end   = request_obj.end_hour    # passenger end
-
-        # If either is missing or not numeric, skip
+        # Compare passenger times vs. driver times with ±30 min tolerance
+        p_start = request_obj.start_hour
+        p_end   = request_obj.end_hour
         if p_start is None or p_end is None:
             continue
 
-        # Check if passenger times are within ±30 min of driver's times
         start_diff = abs(driver_start_hour - p_start)
         end_diff   = abs(driver_end_hour   - p_end)
         if (start_diff > time_tolerance) or (end_diff > time_tolerance):
-            # Times are too different; skip this passenger
             continue
 
-        # If times are OK, compute route from driver to passenger
+        # Passenger coordinates
         passenger_coords = (request_obj.lat, request_obj.lon)
         if not passenger_coords or passenger_coords == (None, None):
-            # No valid coords for passenger
             continue
 
-        route_info = get_route(driver_coords, passenger_coords, f"Driver -> Passenger {request_obj.id}")
-        if not route_info:
-            continue  # couldn't compute route
+        # 1) Route: Driver Start -> Passenger
+        route_to_passenger = get_route(driver_coords, passenger_coords, f"Driver -> Passenger {request_obj.id}")
+        if not route_to_passenger:
+            continue
 
-        # route_info["duration"] is in minutes (assuming your get_route divides by 60)
-        if route_info["duration"] <= 60:  # <= 1 hour
-            # Get passenger user info
+        # 2) Route: Passenger -> Destination
+        route_to_destination = get_route(passenger_coords, destination_coords, f"Passenger -> Destination")
+        if not route_to_destination:
+            continue
+
+        # Sum the durations
+        total_duration = route_to_passenger["duration"] + route_to_destination["duration"]
+        if total_duration <= 60:  # <= 1 hour total
             passenger_user = User.query.filter_by(id=request_obj.user_id).first()
             if passenger_user:
                 possible_passengers.append({
                     "ride_request_id": request_obj.id,
-                    "passenger_id": passenger_user.id,
                     "first_name": passenger_user.first_name,
                     "last_name": passenger_user.last_name,
                     "address": request_obj.address,
                     "day": request_obj.day,
                     "start_hour": request_obj.start_hour,
                     "end_hour": request_obj.end_hour,
-                    "route_duration_minutes": route_info["duration"],
-                    "distance_km": route_info["distance"],
-                    "geometry": route_info["geometry"]
+                    "route_duration_minutes": total_duration,  # Summed
+                    "routes": {
+                        "driver_to_passenger": {
+                            "duration": route_to_passenger["duration"],
+                            "distance": route_to_passenger["distance"],
+                            "geometry": route_to_passenger["geometry"]
+                        },
+                        "passenger_to_destination": {
+                            "duration": route_to_destination["duration"],
+                            "distance": route_to_destination["distance"],
+                            "geometry": route_to_destination["geometry"]
+                        }
+                    }
                 })
 
     return jsonify({"possible_passengers": possible_passengers}), 200
+
 
 
 @app.route('/offerPassenger', methods=['POST'])
@@ -438,7 +455,6 @@ def ride_offers(ride_request_id):
         if driver:
             offers_data.append({
                 "offer_id": offer.id,
-                "driver_id": driver.id,
                 "status": offer.status,
                 "driver_name": f"{driver.first_name} {driver.last_name}",
                 "driver_address": driver.address
