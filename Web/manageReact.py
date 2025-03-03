@@ -15,8 +15,10 @@ db = SQLAlchemy(app)
 # Modèle pour les utilisateurs
 class User(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    email = db.Column(db.String(100), nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
+    password = db.Column(db.String(255), nullable=False)  # Plain-text or hashed
     address = db.Column(db.String(200), nullable=False)
     is_driver = db.Column(db.Boolean, default=False)
     calendar = db.Column(db.Text, nullable=True)
@@ -64,6 +66,7 @@ class DriverOffer(db.Model):
 @app.route('/signup', methods=['POST'])
 def signup():
     data = request.get_json()
+    email = data['email']
     first_name = data['first_name']
     last_name = data['last_name']
     address = data['address']
@@ -77,6 +80,7 @@ def signup():
 
     # Create user without specifying id => the default UUID will be used
     new_user = User(
+        email=email,
         first_name=first_name,
         last_name=last_name,
         address=address,
@@ -99,11 +103,11 @@ def login():
 
     print("Received data for login:", data)  # Debug
 
-    numero = data['numero_etudiant']
+    numero = data['email']
     password = data['password']
 
     # Retrieve user by student number
-    user = User.query.filter_by(id=numero).first()
+    user = User.query.filter_by(email=numero).first()
     
     if not user:
         return jsonify({'error': 'Invalid credentials'}), 401
