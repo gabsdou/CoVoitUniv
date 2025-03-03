@@ -7,7 +7,7 @@ function Connexion() {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
   const [formData, setFormData] = useState({
-    numero_etudiant: "",
+    email: "",
     password: "",
   });
 
@@ -53,12 +53,12 @@ function Connexion() {
       <h1>Connexion</h1>
       <form onSubmit={handleSubmit} className="form-container">
         <div className="form-group">
-          <label htmlFor="numero_etudiant">Numéro Étudiant :</label>
+          <label htmlFor="numero_etudiant">Email :</label>
           <input
             type="integer"
             id="numero_etudiant"
             name="numero_etudiant"
-            value={formData.numero_etudiant}
+            value={formData.email}
             onChange={handleChange}
             required
           />

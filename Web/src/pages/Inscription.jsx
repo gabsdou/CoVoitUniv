@@ -3,7 +3,7 @@ import "./Inscription.css";
 
 function Inscription() {
   const [formData, setFormData] = useState({
-    numero_etudiant: "",
+    email: "",
     password: "",
     last_name: "",
     first_name: "",
@@ -52,12 +52,12 @@ function Inscription() {
       {!isSubmitted ? (
         <form onSubmit={handleSubmit} className="form-container">
           <div className="form-group">
-            <label htmlFor="numero_etudiant">Numéro Etudiant :</label>
+            <label htmlFor="numero_etudiant">Email :</label>
             <input
               type="integer"
               id="numero_etudiant"
               name="numero_etudiant"
-              value={formData.numero_etudiant}
+              value={formData.email}
               onChange={handleChange}
               required
             />

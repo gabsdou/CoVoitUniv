@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import SemaineView from "./SemaineView";
 import "./MoisView.css";
 
-function MoisView({ year, monthData, onBack }) {
+function MoisView({ year, monthData,userId, onBack }) {
   const [selectedWeek, setSelectedWeek] = useState(null);
   const { monthName, weeks } = monthData;
 
@@ -12,6 +12,7 @@ function MoisView({ year, monthData, onBack }) {
     return (
       <SemaineView
         week={selectedWeek}
+        userId={userId}
         onBack={() => setSelectedWeek(null)}
       />
     );
