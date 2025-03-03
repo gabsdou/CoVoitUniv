@@ -40,6 +40,33 @@ function SemaineView({ week, userId, onBack }) {
       endHour: 17,
     }));
   };
+  const handleSaveWeek = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/saveCal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          calendar_changes: {
+            weekNumber: week.weekNumber,
+            days: daysHours,
+          },
+        }),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        alert("Modifications enregistrées avec succès !");
+      } else {
+        alert(`Erreur : ${result.error}`);
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'envoi des données :", error);
+      alert("Impossible de sauvegarder les modifications.");
+    }
+  };
 
   const [dragging, setDragging] = useState(null);
 
@@ -118,7 +145,9 @@ function SemaineView({ week, userId, onBack }) {
             </div>
           );
         })}
+
       </div>
+      <button onClick={handleSaveWeek} className="btn-save">💾 Sauvegarder</button>
     </div>
   );
 }
