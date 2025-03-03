@@ -110,7 +110,7 @@ def login():
     user = User.query.filter_by(email=numero).first()
     
     if not user:
-        return jsonify({'error': 'Invalid credentials'}), 401
+        return jsonify({'error': 'Invalid credentials : no accounts found'}), 401
 
     # Compare the provided password with the one stored in DB
     # If you are hashing passwords, you’d do something like:
@@ -120,7 +120,7 @@ def login():
         token = user.id
         return jsonify({'token': token, 'status': 'success'})
     else:
-        return jsonify({'error': 'Invalid credentials'}), 401
+        return jsonify({'error': 'Invalid credentials : wrong password'}), 401
 
 # MOYEN SÛR FAUT TESTER TOUT CA AVEC LE FRONT
 
