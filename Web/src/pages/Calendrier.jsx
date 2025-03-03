@@ -1,5 +1,5 @@
 // src/components/Calendrier2025.jsx
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
