@@ -54,7 +54,7 @@ function Inscription() {
           <div className="form-group">
             <label htmlFor="numero_etudiant">Email :</label>
             <input
-              type="integer"
+              type="string"
               id="numero_etudiant"
               name="numero_etudiant"
               value={formData.email}
