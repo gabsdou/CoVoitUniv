@@ -157,7 +157,7 @@ def save_calendar():
     #   }
     # }
 
-
+    print("Received calendar data:", data)  # Debug
     user_id = data.get('user_id')
     calendar_changes = data.get('calendar_changes')
     print("Received calendar data:", calendar_changes)  # Debug
@@ -190,7 +190,7 @@ def save_calendar():
 #permet de recuperer le calendrier pour son User
 @app.route('/getCal/<string:user_id>', methods=['GET'])
 def get_calendar(user_id):
-   
+    calendar_data = None
     # Retrieve user from DB
     user = User.query.filter_by(id=user_id).first()
     if not user:
@@ -219,10 +219,8 @@ def get_calendar(user_id):
     
     # Find the requested week by matching "weekNumber"
     requested_week = None
-    for week_entry in calendar_data:
-        if week_entry.get('weekNumber') == index_week:
-            requested_week = week_entry
-            break
+    if calendar_data.get('weekNumber') == index_week:
+        requested_week = calendar_data
     
     if not requested_week:
         # If there's no entry matching that weekNumber
