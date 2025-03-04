@@ -1,30 +1,35 @@
 {
-  "weekNumber": 6,
-  "days": [
-    {
-      "date": "2025-02-02T23:00:00.000Z",
-      "startHour": 9,
-      "endHour": 17
-    },
-    {
-      "date": "2025-02-03T23:00:00.000Z",
-      "startHour": 9,
-      "endHour": 17
-    },
-    {
-      "date": "2025-02-04T23:00:00.000Z",
-      "startHour": 5,
-      "endHour": 17
-    },
-    {
-      "date": "2025-02-05T23:00:00.000Z",
-      "startHour": 9,
-      "endHour": 17
-    },
-    {
-      "date": "2025-02-06T23:00:00.000Z",
-      "startHour": 9,
-      "endHour": 17
-    }
-  ]
+  "user_id": "bbf38bc3-c190-4bfb-8d8d-afbcf0b67392",
+  "calendar_changes": {
+    "weekNumber": 6,
+    "days": [
+      {
+        "date": "2025-02-02T23:00:00.000Z",
+        "startHour": 9,
+        "endHour": 17
+      },
+      {
+        "date": "2025-02-03T23:00:00.000Z",
+        "startHour": 9,
+        "endHour": 17,
+        "retour": "Bobigny"
+      },
+      {
+        "date": "2025-02-04T23:00:00.000Z",
+        "startHour": 5,
+        "endHour": 17,
+        "depart": "Villetaneuse"
+      },
+      {
+        "date": "2025-02-05T23:00:00.000Z",
+        "startHour": 9,
+        "endHour": 17
+      },
+      {
+        "date": "2025-02-06T23:00:00.000Z",
+        "startHour": 9,
+        "endHour": 17
+      }
+    ]
+  }
 }

@@ -46,13 +46,38 @@ function SemaineView({ week, userId, onBack }) {
       retour: "Villetaneuse",
     }));
   };
+  const saveJsonToFile = (jsonData, filename) => {
+    const jsonString = JSON.stringify(jsonData, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   const handleSaveWeek = async () => {
+    const dataToSave = {
+      user_id: userId,
+      calendar_changes: {
+          weekNumber: week.weekNumber,
+          days: daysHours.map(day => ({
+              date: day.date,
+              startHour: day.startHour,
+              endHour: day.endHour,
+              depart: day.depart,
+              retour: day.retour,
+          })),
+      },
+    };
+    saveJsonToFile(dataToSave, `calendar_week_${week.weekNumber}.json`);
     try {
         const response = await fetch("http://localhost:5000/saveCal", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
+
             body: JSON.stringify({
                 user_id: userId,
                 calendar_changes: {
