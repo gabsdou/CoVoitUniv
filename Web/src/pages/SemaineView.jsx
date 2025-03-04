@@ -21,7 +21,15 @@ function SemaineView({ week, userId, onBack }) {
         console.log("Données récupérées :", data);
 
         if (data.calendar && data.calendar.days.length > 0) {
-          setDaysHours(data.calendar.days);
+          setDaysHours(data.calendar.days.map(day => ({
+            date: day.date,
+            startHour: day.startHour,
+            endHour: day.endHour,
+            departAller: normaliserAdresse(day.departAller),
+            destinationAller: normaliserAdresse(day.destinationAller),
+            departRetour: normaliserAdresse(day.departRetour),
+            destinationRetour: normaliserAdresse(day.destinationRetour),
+          })));
         } else {
           console.warn("Aucune donnée trouvée pour cette semaine. Utilisation des horaires par défaut.");
           setDaysHours(getDefaultWeekSchedule(weekdays));
@@ -39,6 +47,17 @@ function SemaineView({ week, userId, onBack }) {
   /**
    * Génère une semaine par défaut avec des horaires de 9h à 17h.
    */
+  const normaliserAdresse = (adresse) => {
+    if (!adresse) return "Maison"; // Valeur par défaut si null
+
+    if (adresse.includes("74 Rue Marcel Cachin, 93000 Bobigny")) return "Bobigny";
+    if (adresse.includes("99 Av. Jean Baptiste Clément, 93430 Villetaneuse")) return "Villetaneuse";
+    if (adresse.includes("Place du 8 Mai 1945, 93200, Saint-Denis-Denis")) return "Saint-Denis";
+    if (adresse.includes("Maison")) return "Maison"; // Si déjà formaté
+
+    return "Maison"; // Si aucune correspondance, on met "Maison"
+};
+
   const getDefaultWeekSchedule = (weekDays) => {
     return weekDays.map(date => ({
       date,
@@ -185,8 +204,9 @@ function SemaineView({ week, userId, onBack }) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({user_id: userId,
-            timeslot: mornEve,
+          body: JSON.stringify({
+            user_id: userId,
+            timeSlot: mornEve,
             day : date }),
         }
         );

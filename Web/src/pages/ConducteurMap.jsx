@@ -47,11 +47,43 @@ const InterfaceConducteur = () => {
 
         return () => newMap.remove();
     }, [userId]);
+    const afficherTrajet = (map, routesData) => {
+      if (!map || !routesData) return;
+
+      // Supprimer les anciens itinéraires s'ils existent
+      if (map.routeLayer) {
+          map.removeControl(map.routeLayer);
+      }
+
+      // Récupérer les trajets
+      const driverToPassengerCoords = routesData.routes.driver_to_passenger.geometry;
+      const passengerToDestinationCoords = routesData.routes.passenger_to_destination.geometry;
+
+      // Fonction pour convertir les coordonnées GeoJSON en format Leaflet
+      const convertirCoordonnees = (geoJsonCoords) => {
+          return geoJsonCoords.map(coord => [coord[1], coord[0]]); // Inverser lat/lon
+      };
+
+      const route1 = convertirCoordonnees(driverToPassengerCoords);
+      const route2 = convertirCoordonnees(passengerToDestinationCoords);
+
+      // Ajouter les trajets à la carte avec Leaflet Routing Machine
+      map.routeLayer = L.Routing.control({
+          waypoints: [
+              L.latLng(route1[0]), // Départ du conducteur
+              L.latLng(route1[route1.length - 1]), // Arrivée chez le passager
+              L.latLng(route2[route2.length - 1])  // Destination finale du passager
+          ],
+          createMarker: function() { return null; }, // Pas de marqueurs par défaut
+          routeWhileDragging: true
+      }).addTo(map);
+  };
+
 
     const fetchPassagers = async () => {
         if (!userId) return;
         try {
-            const response = await fetch(`http://localhost:3000/findpassengers/`
+            const response = await fetch(`http://localhost:3000/find_passengers/`
               , {
                 method: "POST",
                 headers: {
@@ -60,13 +92,23 @@ const InterfaceConducteur = () => {
                 body: JSON.stringify({ user_id: userId, timeslot: mornEve, day: date }),}
             );
             const data = await response.json();
-            setPassagers(data);
-
-            if (map) {
-                data.forEach(passager => {
-                    L.marker(passager.coords).addTo(map).bindPopup(`${passager.first_name} ${passager.last_name}`);
-                });
+            if (data.possible_passengers.length === 0) {
+              console.log("Aucun passager trouvé.");
+              return;
             }
+            setPassagers(data.possible_passengers);
+
+            // Ajouter des marqueurs sur la carte pour les passagers
+            data.possible_passengers.forEach(passager => {
+              if (passager.geometry) {
+                  L.marker([passager.geometry[1], passager.geometry[0]])
+                   .addTo(map)
+                   .bindPopup(`${passager.first_name} ${passager.last_name}`);
+              }
+          });
+
+          // Afficher les trajets sur la carte
+          afficherTrajet(map, data);
         } catch (error) {
             console.error("Erreur lors de la récupération des passagers:", error);
         }
