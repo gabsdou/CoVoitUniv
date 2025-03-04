@@ -51,7 +51,14 @@ const InterfaceConducteur = () => {
     const fetchPassagers = async () => {
         if (!userId) return;
         try {
-            const response = await fetch(`http://localhost:3000/findpassengers/${userId}?timeslot=${mornEve}&day=${date}`);
+            const response = await fetch(`http://localhost:3000/findpassengers/`
+              , {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ user_id: userId, timeslot: mornEve, day: date }),}
+            );
             const data = await response.json();
             setPassagers(data);
 

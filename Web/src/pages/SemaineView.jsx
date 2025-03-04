@@ -179,7 +179,17 @@ function SemaineView({ week, userId, onBack }) {
     }
     else {
       try {
-        const response = await fetch(`http://localhost:5000/requestride/${userId}?timeslot=${mornEve}&day=${date}`);
+        const response = await fetch(`http://localhost:5000/requestride/`
+        , {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({user_id: userId,
+            timeslot: mornEve,
+            day : date }),
+        }
+        );
         const data = await response.json();
         if (response.ok) {
           alert("Demande de trajet envoyée !");
