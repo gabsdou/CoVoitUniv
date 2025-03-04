@@ -84,7 +84,7 @@ const InterfaceConducteur = () => {
         if (!userId) return;
         try {
 
-            const response = await fetch(`http://localhost:5000/find_passengers/`
+            const response = await fetch(`http://localhost:5000/find_passengers`
 
 
               , {

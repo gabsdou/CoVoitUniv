@@ -316,6 +316,7 @@ def request_ride():
 @app.route('/find_passengers', methods=['POST'])
 def find_passengers():
     # Parse JSON body
+    print("Received JSON data:", request.get_json(),flush=True)  # Debug
     data = request.get_json()
     if not data:
         return jsonify({"error": "Missing JSON body"}), 400
@@ -366,24 +367,27 @@ def find_passengers():
         if isinstance(d, dict) and "date" in d and day in d["date"]:
             day_info = d
             break
-
+    print("Found day info:", day_info,flush=True)
     if not day_info:
+        print("No calendar data found for that day",flush=True)
         return jsonify({"possible_passengers": []}), 200  # No data for that day => empty
-
+    print("Driver's calendar entry:", day_info,flush=True)
     # 4) Extract the driver's start/end times
     driver_start_hour = day_info.get("startHour")
     driver_end_hour = day_info.get("endHour")
     if driver_start_hour is None or driver_end_hour is None:
+        print("Driver's start/end hours not found",flush=True)
         return jsonify({"possible_passengers": []}), 200
-
+    
+    print(f"Driver's start hour: {driver_start_hour}, end hour: {driver_end_hour}",flush=True)
     # 5) Determine the driver's final destination from the calendar
     if time_slot.lower() == "morning":
-        driver_destination = day_info.get("matinDestination")
+        driver_destination = day_info.get("destinationAller")
         driver_time = driver_start_hour
     else:
-        driver_destination = day_info.get("soirDestination")
+        driver_destination = day_info.get("destinationRetour")
         driver_time = driver_end_hour
-
+    print(f"Driver's destination: {driver_destination}",flush=True)
     # Fall back to the driver's stored address if none found
     if not driver_destination:
         driver_destination = driver.address
@@ -392,49 +396,55 @@ def find_passengers():
     driver_coords = geocode_address(driver.address)
     if not driver_coords:
         return jsonify({"error": "Driver's start address invalid"}), 400
-
+    print(f"Driver's start address: {driver.address}",flush=True)
     dest_coords = geocode_address(driver_destination)
     if not dest_coords:
         return jsonify({"error": "Driver's destination invalid"}), 400
-
+    print(f"Driver's destination: {driver_destination}",
+flush=True)
     # 7) Find unmatched passenger requests for that day
     ride_requests = RideRequest.query.filter_by(day=day, matched_driver_id=None).all()
 
     # ±30-min (0.5 hr) tolerance
     time_tolerance = 0.5
     possible_passengers = []
-
+    print(f"Found {len(ride_requests)} ride requests for {day}",flush=True)
     for request_obj in ride_requests:
         # If "morning", compare driver's startHour with passenger's start_hour
         # If "evening", compare driver's endHour with passenger's end_hour
         passenger_time = request_obj.start_hour if (time_slot.lower() == "morning") else request_obj.end_hour
         if passenger_time is None:
             continue
-
+        print(f"Checking passenger {request_obj.id} with time {passenger_time}",flush=True)
         # Compare times
         if abs(driver_time - passenger_time) > time_tolerance:
             continue
-
+        print("Time match!",flush=True)
         # (Optional) check if passenger's destination matches driver's for morning
         if time_slot.lower() == "morning" and request_obj.destination != driver_destination:
+            print(f"Destination mismatch {request_obj.destination} , {driver_destination}",flush=True)
             continue
-
+        print("Destination match!",flush=True)
         # 8) Check route times
         passenger_coords = (request_obj.lat, request_obj.lon)
         if not passenger_coords or passenger_coords == (None, None):
             continue
-
+        print(f"Found passenger {request_obj.id} at {passenger_coords}",flush=True)
         route_to_passenger = get_route(driver_coords, passenger_coords, f"Driver->Passenger {request_obj.id}")
         if not route_to_passenger:
+            print(f"No route found to passenger {request_obj.id}",flush=True)
             continue
-
+        print(f"Route to passenger {request_obj.id}: {route_to_passenger}",flush=True)
         route_to_destination = get_route(passenger_coords, dest_coords, "Passenger->Destination")
         if not route_to_destination:
+            print(f"No route found from passenger {request_obj.id} to destination",flush=True)
             continue
-
+        print(f"Route to destination: {route_to_destination}",flush=True)
+        # Calculate total duration
         total_duration = route_to_passenger["duration"] + route_to_destination["duration"]
         # If total detour <= 60 minutes
-        if total_duration <= 60:
+        if total_duration <= 6000:
+            print(f"Possible passenger: {request_obj.id}",flush=True)
             passenger_user = User.query.filter_by(id=request_obj.user_id).first()
             if passenger_user:
                 possible_passengers.append({
