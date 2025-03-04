@@ -15,7 +15,7 @@ db = SQLAlchemy(app)
 # Modèle pour les utilisateurs
 class User(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    email = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100),unique=True, nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String(255), nullable=False)  # Plain-text or hashed
@@ -74,29 +74,34 @@ def signup():
     password = data['password']  # Should be hashed in production
     is_driver = data['is_driver']
 
-    # Optionally geocode to get lat/lon
+    # 1) Check if email is already used
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
+        return jsonify({'error': 'Cette adresse e-mail est déjà utilisée.'}), 409
+
+    # 2) Optionally geocode to get lat/lon
     lat, lon = geocode_address(address)
     if not lat or not lon:
         return jsonify({'error': 'Adresse invalide', 'status': 'error'}), 400
 
-    # Create user without specifying id => the default UUID will be used
+    # 3) Create new user
     new_user = User(
         email=email,
         first_name=first_name,
         last_name=last_name,
         address=address,
-        password=password,
+        password=password,  # in production => use hashed password
         is_driver=is_driver
     )
     db.session.add(new_user)
     db.session.commit()
 
-    # If you need to return the new user's ID:
     return jsonify({
         'message': 'Inscription réussie !',
         'status': 'success',
         'user_id': new_user.id
-    })
+    }), 201
+
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -258,21 +263,6 @@ def request_ride():
     if not day_info:
         return jsonify({"error": f"No calendar entry found for day {day_str}"}), 400
 
-    # 4) Extract addresses & times from the day_info, with fallback to user.address
-    #    We'll assume your day_info might look like:
-    #      {
-    #        "date": "2025-02-03T23:00:00.000Z",
-    #        "startHour": 9,
-    #        "endHour": 17,
-    #        "matinDepart": "Bobigny",
-    #        "matinDestination": "Villetaneuse",
-    #        "soirDepart": "Villetaneuse",
-    #        "soirDestination": "Bobigny"
-    #      }
-
-    # We'll guess the user wants a morning ride if timeSlot == "morning",
-    # or an evening ride if timeSlot == "evening". 
-    # If no timeSlot is given, let's default to morning.
     if time_slot is None:
         time_slot = "morning"
 
@@ -514,23 +504,32 @@ def offer_passenger():
 
     return jsonify({"message": "Offer created", "driver_offer_id": new_offer.id}), 200
 
-@app.route('/rideOffers/<string:ride_request_id>', methods=['GET'])
-def ride_offers(ride_request_id):
-    """
-    Returns all driver offers for a given ride_request_id.
-    The passenger can see multiple offers and decide which to accept.
-    """
+@app.route('/rideOffers', methods=['POST'])
+def ride_offers():
+
+    # Parse JSON body
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Missing JSON body"}), 400
+
+    # Retrieve the ride_request_id from JSON
+    ride_request_id = data.get('ride_request_id')
+    if not ride_request_id:
+        return jsonify({"error": "Missing 'ride_request_id' in JSON"}), 400
+
+    # Lookup the RideRequest
     ride_request = RideRequest.query.filter_by(id=ride_request_id).first()
     if not ride_request:
         return jsonify({"error": "Ride request not found"}), 404
 
-    # You could also check if the current user is indeed the owner of the ride request
+    # (Optional) check if the current user is indeed the owner of this ride request
     # if current_user.id != ride_request.user_id:
     #     return jsonify({"error": "Unauthorized"}), 403
 
+    # Query all offers for this ride request
     offers = DriverOffer.query.filter_by(ride_request_id=ride_request_id).all()
 
-    # Build a list of driver info
+    # Build the list of offers
     offers_data = []
     for offer in offers:
         driver = User.query.filter_by(id=offer.driver_id).first()
@@ -552,5 +551,4 @@ if __name__ == '__main__':
     
     with app.app_context():# Crée un contexte de l'application  
         db.create_all()  # Crée la base de données si elle n'existe pas encore    app.run(debug=True)
-        
     app.run(debug=True)
