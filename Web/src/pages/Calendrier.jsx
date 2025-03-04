@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import { AuthContext } from "../context/AuthContext"; // Import du contexte
+import { AuthContext } from "../context/AuthContext";
 import MoisView from "./MoisView";
 import 'dayjs/locale/fr';
 import "./Calendrier.css";
@@ -26,7 +26,7 @@ const MONTH_NAMES = [
 function getWeeksInMonth(year, monthIndex) {
   const startOfMonth = dayjs(`${year}-${monthIndex+1}-01`).startOf("month");
   const endOfMonth = startOfMonth.endOf("month");
-  const { userId } = useContext(AuthContext);
+
 
   let current = startOfMonth.startOf("isoWeek"); // Lundi
   const weeks = [];
@@ -42,7 +42,7 @@ function getWeeksInMonth(year, monthIndex) {
 }
 
 function Calendrier2025({  }) {
-  const { userId } = useContext(AuthContext); // Récupérer userId
+  const { userId } = useContext(AuthContext);
 
   const [selectedMonth, setSelectedMonth] = useState(null);
 

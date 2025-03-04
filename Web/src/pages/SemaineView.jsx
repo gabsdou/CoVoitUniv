@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
 import "./SemaineView.css";
 
 function SemaineView({ week, userId, onBack }) {
+  const navigate = useNavigate();
   const weekdays = week.days.filter(date => {
     const dayOfWeek = new Date(date).getDay();
     return dayOfWeek !== 0 && dayOfWeek !== 6; // Exclure dimanche (0) et samedi (6)
@@ -38,36 +42,59 @@ function SemaineView({ week, userId, onBack }) {
       date,
       startHour: 9,
       endHour: 17,
+      depart: "Maison",
+      retour: "Villetaneuse",
     }));
   };
   const handleSaveWeek = async () => {
     try {
-      const response = await fetch("http://localhost:5000/saveCal", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          calendar_changes: {
-            weekNumber: week.weekNumber,
-            days: daysHours,
-          },
-        }),
-      });
+        const response = await fetch("http://localhost:5000/saveCal", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                user_id: userId,
+                calendar_changes: {
+                    weekNumber: week.weekNumber,
+                    days: daysHours.map(day => ({
+                        date: day.date,
+                        startHour: day.startHour,
+                        endHour: day.endHour,
+                        depart: day.depart,
+                        retour: day.retour,
+                    })),
+                },
+            }),
+        });
 
-      const result = await response.json();
-      if (response.ok) {
-        alert("Modifications enregistrées avec succès !");
-      } else {
-        alert(`Erreur : ${result.error}`);
-      }
+        const result = await response.json();
+        if (response.ok) {
+            alert("Modifications enregistrées avec succès !");
+        } else {
+            alert(`Erreur : ${result.error}`);
+        }
     } catch (error) {
-      console.error("Erreur lors de l'envoi des données :", error);
-      alert("Impossible de sauvegarder les modifications.");
+        console.error("Erreur lors de l'envoi des données :", error);
+        alert("Impossible de sauvegarder les modifications.");
     }
-  };
+};
 
+  const handleDepartChange = (dayIndex, value) => {
+    setDaysHours(prev => {
+        const newDaysHours = [...prev];
+        newDaysHours[dayIndex].depart = value;
+        return newDaysHours;
+    });
+};
+
+  const handleRetourChange = (dayIndex, value) => {
+    setDaysHours(prev => {
+        const newDaysHours = [...prev];
+        newDaysHours[dayIndex].retour = value;
+        return newDaysHours;
+    });
+  };
   const [dragging, setDragging] = useState(null);
 
   useEffect(() => {
@@ -99,7 +126,10 @@ function SemaineView({ week, userId, onBack }) {
       return newDaysHours;
     });
   };
-
+  const handleNavigate = (hourType,date, startHour, endHour) => {
+    const selectedHour = hourType === "start" ? startHour : endHour;
+    navigate("/InterfaceConducteur", { state: { userId, selectedHour, date } });
+  };
   return (
     <div className="semaine-container">
       <button onClick={onBack} className="btn-back">← Retour au mois</button>
@@ -142,14 +172,31 @@ function SemaineView({ week, userId, onBack }) {
                   );
                 })}
               </div>
+              <div className="day-buttons">
+              <label htmlFor='depart-select'>Départ</label>
+              <select id='depart-select' value={dayObj.depart} onChange={(e) => handleDepartChange(dayIndex, e.target.value)}>
+                  <option value="Maison">Maison</option>
+                  <option value="Villetaneuse">Villetaneuse</option>
+                  <option value="Saint-Denis">Saint-Denis</option>
+                  <option value="Bobigny">Bobigny</option>
+              </select>
+                <button onClick={() => handleNavigate("start", date, startHour, endHour)} className="button-depart-navig" >Voir Départ</button>
+                <label htmlFor='retour-select'>Retour</label>
+                <select id='retour-select' value={dayObj.retour} onChange={(e) => handleRetourChange(dayIndex, e.target.value)}>
+                    <option value="Villetaneuse">Villetaneuse</option>
+                    <option value="Maison">Maison</option>
+                    <option value="Saint-Denis">Saint-Denis</option>
+                    <option value="Bobigny">Bobigny</option>
+                </select>
+                <button onClick={() => handleNavigate("end",date, startHour, endHour)} className="button-depart-navig">Voir Retour</button>
+
+              </div>
             </div>
           );
         })}
-
       </div>
       <button onClick={handleSaveWeek} className="btn-save">💾 Sauvegarder</button>
     </div>
   );
 }
-
 export default SemaineView;

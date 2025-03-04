@@ -74,3 +74,24 @@
   .hour-block.handle:hover {
     background-color: #ffa;
   }
+
+  .button-depart-navig{
+    padding: 12px 20px;
+    border: none;
+    margin-left: 0%;
+    margin-right: 0%;
+    border-radius: 8px;
+    width: 100%;
+  }
+  .btn-save{
+    background-color: #293358; /* vert par exemple */
+    color: rgb(255, 255, 255);
+    font-size: 16px;
+    padding: 12px 20px;
+    border: none;
+    margin-left: 25%;
+    margin-right: 25%;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
