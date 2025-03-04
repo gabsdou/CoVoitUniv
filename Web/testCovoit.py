@@ -178,7 +178,7 @@ def replace_placeholders(obj, user_address):
         "Saint-Denis": "Place du 8 Mai 1945, 93200, Saint-Denis",
 
         # Now "maison" points to this user's address
-        "maison": user_address
+        "Maison": user_address
     }
 
     if isinstance(obj, dict):
