@@ -83,7 +83,10 @@ const InterfaceConducteur = () => {
     const fetchPassagers = async () => {
         if (!userId) return;
         try {
+
             const response = await fetch(`http://localhost:5000/find_passengers/`
+
+
               , {
                 method: "POST",
                 headers: {
@@ -92,6 +95,7 @@ const InterfaceConducteur = () => {
                 body: JSON.stringify({ user_id: userId, timeslot: mornEve, day: date }),}
             );
             const data = await response.json();
+            console.log(data);
             if (data.possible_passengers.length === 0) {
               console.log("Aucun passager trouvé.");
               return;
