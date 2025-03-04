@@ -16,7 +16,7 @@ const InterfaceConducteur = () => {
     const [passagers, setPassagers] = useState([]);
     const [map, setMap] = useState(null);
     const location = useLocation();
-    const {selectedHour, date } = location.state || {}; // Récupérer les données passées
+    const {passCond, date , mornEve} = location.state || {}; // Récupérer les données passées
     //fix bug des icones
     delete L.Icon.Default.prototype._getIconUrl;
     L.Icon.Default.mergeOptions({
@@ -51,7 +51,7 @@ const InterfaceConducteur = () => {
     const fetchPassagers = async () => {
         if (!userId) return;
         try {
-            const response = await fetch(`http://localhost:3000/findpassengers/${userId}?hour=${selectedHour}&date=${date}`);
+            const response = await fetch(`http://localhost:3000/findpassengers/${userId}?timeslot=${mornEve}&day=${date}`);
             const data = await response.json();
             setPassagers(data);
 

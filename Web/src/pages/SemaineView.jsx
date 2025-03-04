@@ -173,9 +173,25 @@ function SemaineView({ week, userId, onBack }) {
       return newDaysHours;
     });
   };
-  const handleNavigate = (hourType,date, startHour, endHour) => {
-    const selectedHour = hourType === "start" ? startHour : endHour;
-    navigate("/InterfaceConducteur", { state: { userId, selectedHour, date } });
+  const handleNavigate = async (passCond,date, mornEve) => {
+    if (passCond === "conducteur") {
+      navigate("/InterfaceConducteur", { state: { userId, passCond, mornEve, date } });
+    }
+    else {
+      try {
+        const response = await fetch(`http://localhost:5000/requestride/${userId}?timeslot=${mornEve}&day=${date}`);
+        const data = await response.json();
+        if (response.ok) {
+          alert("Demande de trajet envoyée !");
+        } else {
+          alert(`Erreur : ${data.error}`);
+        }
+      }
+      catch (error) {
+        console.error("Erreur lors de l'envoi des données :", error);
+        alert("Impossible de sauvegarder les modifications.");
+    }
+    }
   };
   return (
     <div className="semaine-container">
@@ -241,7 +257,8 @@ function SemaineView({ week, userId, onBack }) {
                 <br/>
 
 
-                <button onClick={() => handleNavigate("end",date, startHour, endHour)} className="button-depart-navig">Je veux être passager à l'aller</button>
+                <button onClick={() => handleNavigate("conducteur",date, "morning")} className="button-depart-navig">Je veux être conducteur à l'aller</button>
+                <button onClick={() => handleNavigate("passager",date, "morning")} className="button-depart-navig">Je veux être passager à l'aller</button>
                 <label htmlFor='depart-select'>Départ Retour</label>
                 <br/>
                 <select id='depart-select' value={dayObj.departRetour} onChange={(e) => handleDepartRetourChange(dayIndex, e.target.value)}>
@@ -262,7 +279,8 @@ function SemaineView({ week, userId, onBack }) {
                 </select>
                 <br/>
 
-                <button onClick={() => handleNavigate("end",date, startHour, endHour)} className="button-depart-navig">Je veux être passager au retour</button>
+                <button onClick={() => handleNavigate("conducteur",date, "evening")} className="button-depart-navig">Je veux être conducteur au retour</button>
+                <button onClick={() => handleNavigate("passager",date, "evening")} className="button-depart-navig">Je veux être passager au retour</button>
 
 
               </div>
