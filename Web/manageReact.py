@@ -263,21 +263,6 @@ def request_ride():
     if not day_info:
         return jsonify({"error": f"No calendar entry found for day {day_str}"}), 400
 
-    # 4) Extract addresses & times from the day_info, with fallback to user.address
-    #    We'll assume your day_info might look like:
-    #      {
-    #        "date": "2025-02-03T23:00:00.000Z",
-    #        "startHour": 9,
-    #        "endHour": 17,
-    #        "matinDepart": "Bobigny",
-    #        "matinDestination": "Villetaneuse",
-    #        "soirDepart": "Villetaneuse",
-    #        "soirDestination": "Bobigny"
-    #      }
-
-    # We'll guess the user wants a morning ride if timeSlot == "morning",
-    # or an evening ride if timeSlot == "evening". 
-    # If no timeSlot is given, let's default to morning.
     if time_slot is None:
         time_slot = "morning"
 
@@ -519,23 +504,32 @@ def offer_passenger():
 
     return jsonify({"message": "Offer created", "driver_offer_id": new_offer.id}), 200
 
-@app.route('/rideOffers/<string:ride_request_id>', methods=['GET'])
-def ride_offers(ride_request_id):
-    """
-    Returns all driver offers for a given ride_request_id.
-    The passenger can see multiple offers and decide which to accept.
-    """
+@app.route('/rideOffers', methods=['POST'])
+def ride_offers():
+
+    # Parse JSON body
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Missing JSON body"}), 400
+
+    # Retrieve the ride_request_id from JSON
+    ride_request_id = data.get('ride_request_id')
+    if not ride_request_id:
+        return jsonify({"error": "Missing 'ride_request_id' in JSON"}), 400
+
+    # Lookup the RideRequest
     ride_request = RideRequest.query.filter_by(id=ride_request_id).first()
     if not ride_request:
         return jsonify({"error": "Ride request not found"}), 404
 
-    # You could also check if the current user is indeed the owner of the ride request
+    # (Optional) check if the current user is indeed the owner of this ride request
     # if current_user.id != ride_request.user_id:
     #     return jsonify({"error": "Unauthorized"}), 403
 
+    # Query all offers for this ride request
     offers = DriverOffer.query.filter_by(ride_request_id=ride_request_id).all()
 
-    # Build a list of driver info
+    # Build the list of offers
     offers_data = []
     for offer in offers:
         driver = User.query.filter_by(id=offer.driver_id).first()
