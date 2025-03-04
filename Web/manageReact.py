@@ -15,7 +15,7 @@ db = SQLAlchemy(app)
 # Modèle pour les utilisateurs
 class User(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    email = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100),unique=True, nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String(255), nullable=False)  # Plain-text or hashed
@@ -74,29 +74,34 @@ def signup():
     password = data['password']  # Should be hashed in production
     is_driver = data['is_driver']
 
-    # Optionally geocode to get lat/lon
+    # 1) Check if email is already used
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
+        return jsonify({'error': 'Cette adresse e-mail est déjà utilisée.'}), 409
+
+    # 2) Optionally geocode to get lat/lon
     lat, lon = geocode_address(address)
     if not lat or not lon:
         return jsonify({'error': 'Adresse invalide', 'status': 'error'}), 400
 
-    # Create user without specifying id => the default UUID will be used
+    # 3) Create new user
     new_user = User(
         email=email,
         first_name=first_name,
         last_name=last_name,
         address=address,
-        password=password,
+        password=password,  # in production => use hashed password
         is_driver=is_driver
     )
     db.session.add(new_user)
     db.session.commit()
 
-    # If you need to return the new user's ID:
     return jsonify({
         'message': 'Inscription réussie !',
         'status': 'success',
         'user_id': new_user.id
-    })
+    }), 201
+
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -552,5 +557,4 @@ if __name__ == '__main__':
     
     with app.app_context():# Crée un contexte de l'application  
         db.create_all()  # Crée la base de données si elle n'existe pas encore    app.run(debug=True)
-        
     app.run(debug=True)
