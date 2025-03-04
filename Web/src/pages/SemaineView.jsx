@@ -18,6 +18,7 @@ function SemaineView({ week, userId, onBack }) {
       try {
         const response = await fetch(`http://localhost:5000/getCal/${userId}?indexWeek=${week.weekNumber}`);
         const data = await response.json();
+        console.log("Données récupérées :", data);
 
         if (data.calendar && data.calendar.days.length > 0) {
           setDaysHours(data.calendar.days);
@@ -30,8 +31,9 @@ function SemaineView({ week, userId, onBack }) {
         setDaysHours(getDefaultWeekSchedule(weekdays));
       }
     };
-
     fetchWeekSchedule();
+
+
   }, [week.weekNumber, userId]);
 
   /**
@@ -42,8 +44,10 @@ function SemaineView({ week, userId, onBack }) {
       date,
       startHour: 9,
       endHour: 17,
-      depart: "Maison",
-      retour: "Villetaneuse",
+      departAller: "Maison",
+      destinationAller: "Villetaneuse",
+      departRetour: "Villetaneuse",
+      destinationRetour: "Maison",
     }));
   };
   const saveJsonToFile = (jsonData, filename) => {
@@ -65,12 +69,14 @@ function SemaineView({ week, userId, onBack }) {
               date: day.date,
               startHour: day.startHour,
               endHour: day.endHour,
-              depart: day.depart,
-              retour: day.retour,
+              departAller: day.departAller,
+              destinationAller: day.destinationAller,
+              departRetour: day.departRetour,
+              destinationRetour: day.destinationRetour,
           })),
       },
     };
-    saveJsonToFile(dataToSave, `calendar_week_${week.weekNumber}.json`);
+    //saveJsonToFile(dataToSave, `calendar_week_${week.weekNumber}.json`);
     try {
         const response = await fetch("http://localhost:5000/saveCal", {
             method: "POST",
@@ -86,8 +92,10 @@ function SemaineView({ week, userId, onBack }) {
                         date: day.date,
                         startHour: day.startHour,
                         endHour: day.endHour,
-                        depart: day.depart,
-                        retour: day.retour,
+                        departAller: day.departAller,
+                        destinationAller: day.destinationAller,
+                        departRetour: day.departRetour,
+                        destinationRetour: day.destinationRetour,
                     })),
                 },
             }),
@@ -105,18 +113,32 @@ function SemaineView({ week, userId, onBack }) {
     }
 };
 
-  const handleDepartChange = (dayIndex, value) => {
+  const handleDepartAllerChange = (dayIndex, value) => {
     setDaysHours(prev => {
         const newDaysHours = [...prev];
-        newDaysHours[dayIndex].depart = value;
+        newDaysHours[dayIndex].departAller = value;
         return newDaysHours;
     });
 };
 
-  const handleRetourChange = (dayIndex, value) => {
+  const handleDestinationAllerChange = (dayIndex, value) => {
     setDaysHours(prev => {
         const newDaysHours = [...prev];
-        newDaysHours[dayIndex].retour = value;
+        newDaysHours[dayIndex].destinationAller = value;
+        return newDaysHours;
+    });
+  };
+  const handleDepartRetourChange = (dayIndex, value) => {
+    setDaysHours(prev => {
+        const newDaysHours = [...prev];
+        newDaysHours[dayIndex].departRetour = value;
+        return newDaysHours;
+    });
+};
+  const handleDestinationRetourChange = (dayIndex, value) => {
+    setDaysHours(prev => {
+        const newDaysHours = [...prev];
+        newDaysHours[dayIndex].destinationRetour = value;
         return newDaysHours;
     });
   };
@@ -198,22 +220,50 @@ function SemaineView({ week, userId, onBack }) {
                 })}
               </div>
               <div className="day-buttons">
-              <label htmlFor='depart-select'>Départ</label>
-              <select id='depart-select' value={dayObj.depart} onChange={(e) => handleDepartChange(dayIndex, e.target.value)}>
+              <label htmlFor='depart-select'>Départ Aller</label>
+              <br/>
+              <select id='depart-select' value={dayObj.departAller} onChange={(e) => handleDepartAllerChange(dayIndex, e.target.value)}>
                   <option value="Maison">Maison</option>
                   <option value="Villetaneuse">Villetaneuse</option>
                   <option value="Saint-Denis">Saint-Denis</option>
                   <option value="Bobigny">Bobigny</option>
-              </select>
-                <button onClick={() => handleNavigate("start", date, startHour, endHour)} className="button-depart-navig" >Voir Départ</button>
-                <label htmlFor='retour-select'>Retour</label>
-                <select id='retour-select' value={dayObj.retour} onChange={(e) => handleRetourChange(dayIndex, e.target.value)}>
+              </select><br/>
+
+
+                <label htmlFor='retour-select'>Destination Aller</label>
+                <br/>
+                <select id='retour-select' value={dayObj.destinationAller} onChange={(e) => handleDestinationAllerChange(dayIndex, e.target.value)}>
                     <option value="Villetaneuse">Villetaneuse</option>
                     <option value="Maison">Maison</option>
                     <option value="Saint-Denis">Saint-Denis</option>
                     <option value="Bobigny">Bobigny</option>
                 </select>
-                <button onClick={() => handleNavigate("end",date, startHour, endHour)} className="button-depart-navig">Voir Retour</button>
+                <br/>
+
+
+                <button onClick={() => handleNavigate("end",date, startHour, endHour)} className="button-depart-navig">Je veux être passager à l'aller</button>
+                <label htmlFor='depart-select'>Départ Retour</label>
+                <br/>
+                <select id='depart-select' value={dayObj.departRetour} onChange={(e) => handleDepartRetourChange(dayIndex, e.target.value)}>
+                    <option value="Maison">Maison</option>
+                    <option value="Villetaneuse">Villetaneuse</option>
+                    <option value="Saint-Denis">Saint-Denis</option>
+                    <option value="Bobigny">Bobigny</option>
+                </select>
+                <br/>
+
+                <label htmlFor='retour-select'>Destination Retour</label>
+                <br/>
+                <select id='retour-select' value={dayObj.destinationRetour} onChange={(e) => handleDestinationRetourChange(dayIndex, e.target.value)}>
+                    <option value="Villetaneuse">Villetaneuse</option>
+                    <option value="Maison">Maison</option>
+                    <option value="Saint-Denis">Saint-Denis</option>
+                    <option value="Bobigny">Bobigny</option>
+                </select>
+                <br/>
+
+                <button onClick={() => handleNavigate("end",date, startHour, endHour)} className="button-depart-navig">Je veux être passager au retour</button>
+
 
               </div>
             </div>
