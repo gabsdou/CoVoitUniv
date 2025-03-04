@@ -179,7 +179,7 @@ function SemaineView({ week, userId, onBack }) {
     }
     else {
       try {
-        const response = await fetch(`http://localhost:5000/requestride/`
+        const response = await fetch(`http://localhost:5000/request_ride`
         , {
           method: "POST",
           headers: {

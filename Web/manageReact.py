@@ -163,17 +163,17 @@ def save_calendar():
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
-    # Load the existing calendar from DB (if any)
+    # Load the existing calendar from the DB (if any)
     if user.calendar:
         existing_calendar = json.loads(user.calendar)
     else:
         existing_calendar = {}
 
-    # Merge new data into existing_calendar
+    # Merge the new data into existing_calendar
     existing_calendar.update(calendar_changes)
 
-    # --- THIS IS WHERE WE DO THE REPLACEMENT ---
-    updated_calendar = replace_placeholders(existing_calendar)
+    # Replace placeholders, including "maison" -> user.address
+    updated_calendar = replace_placeholders(existing_calendar, user.address)
 
     # Now store the updated dictionary back in the database
     user.calendar = json.dumps(updated_calendar)
@@ -271,12 +271,12 @@ def request_ride():
     end_hour   = day_info.get("endHour", 18)
 
     if time_slot == "morning":
-        depart_field      = "matinDepart"
-        destination_field = "matinDestination"
+        depart_field      = "departAller"
+        destination_field = "destinationAller"
     else:
         # fallback or "evening"
-        depart_field      = "soirDepart"
-        destination_field = "soirDestination"
+        depart_field      = "departRetour"
+        destination_field = "destinationRetour"
 
     # Use the day_info fields or fallback to user.address
     departure_address    = day_info.get(depart_field, user.address)

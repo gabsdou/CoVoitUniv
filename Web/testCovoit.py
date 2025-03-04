@@ -163,29 +163,34 @@ def get_route(start_coords, end_coords, label):
     return None
 
 
-def replace_placeholders(obj):
+def replace_placeholders(obj, user_address):
     """
     Recursively traverse 'obj' (which can be dict, list, or string)
     and replace certain placeholder words with full addresses.
+    In particular, if we encounter 'maison', replace it with 'user_address'.
+
     Returns the updated object.
     """
     # Define your placeholders -> real addresses
     replacements = {
         "Villetaneuse": "99 Av. Jean Baptiste Clément, 93430 Villetaneuse",
         "Bobigny": "74 Rue Marcel Cachin, 93000 Bobigny",
-        "Saint-Denis": "Place du 8 Mai 1945, 93200, Saint-Denis"
+        "Saint-Denis": "Place du 8 Mai 1945, 93200, Saint-Denis",
+
+        # Now "maison" points to this user's address
+        "maison": user_address
     }
 
     if isinstance(obj, dict):
         # Recurse into each key/value
         for key, value in obj.items():
-            obj[key] = replace_placeholders(value)
+            obj[key] = replace_placeholders(value, user_address)
         return obj
 
     elif isinstance(obj, list):
         # Recurse into each element
         for i in range(len(obj)):
-            obj[i] = replace_placeholders(obj[i])
+            obj[i] = replace_placeholders(obj[i], user_address)
         return obj
 
     elif isinstance(obj, str):
@@ -197,6 +202,7 @@ def replace_placeholders(obj):
     else:
         # If it's an int, float, bool, or None, just return as is
         return obj
+
 
 if __name__ == '__main__':
     with app.app_context():  # Crée un contexte de l'application
