@@ -229,7 +229,6 @@ def get_calendar(user_id):
 
     return jsonify({'calendar': requested_week}), 200
 
-@app.route('/requestRide', methods=['POST'])
 @app.route('/request_ride', methods=['POST'])
 def request_ride():
    
