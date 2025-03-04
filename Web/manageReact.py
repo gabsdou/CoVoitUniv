@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, jsonify # type: ignore
 from flask_sqlalchemy import SQLAlchemy # type: ignore
 from flask_cors import CORS # type: ignore
-from testCovoit import geocode_address, get_route
+from testCovoit import geocode_address, get_route, replace_placeholders
 import requests
 import uuid
 import json
@@ -148,42 +148,30 @@ def passengers(id):
 @app.route('/saveCal', methods=['POST'])
 def save_calendar():
     data = request.get_json()
+    user_id = data.get("user_id")
+    calendar_changes = data.get("calendar_changes")
 
-    # Example of JSON sent by the frontend:
-    # {
-    #   "user_id": 12345,
-    #   "calendar_changes": {
-    #       "monday": ["8:00-10:00", "14:00-16:00"],
-    #       "tuesday": ["9:00-11:00"]
-    #   }
-    # }
-
-    print("Received calendar data:", data)  # Debug
-    user_id = data.get('user_id')
-    calendar_changes = data.get('calendar_changes')
-    print("Received calendar data:", calendar_changes)  # Debug
-    if not user_id or not calendar_changes:
+    if not user_id or calendar_changes is None:
         return jsonify({'error': 'Missing user_id or calendar_changes'}), 400
 
-    # Retrieve the user
     user = User.query.filter_by(id=user_id).first()
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
-    # Load existing calendar (if any); otherwise, start with an empty dict
+    # Load the existing calendar from DB (if any)
     if user.calendar:
         existing_calendar = json.loads(user.calendar)
     else:
         existing_calendar = {}
 
-    # For each day in calendar_changes, overwrite (replace) the existing data 
-    # with the new data.
-    #
+    # Merge new data into existing_calendar
     existing_calendar.update(calendar_changes)
-  
 
-    # Store the updated dictionary back in the database
-    user.calendar = json.dumps(existing_calendar)
+    # --- THIS IS WHERE WE DO THE REPLACEMENT ---
+    updated_calendar = replace_placeholders(existing_calendar)
+
+    # Now store the updated dictionary back in the database
+    user.calendar = json.dumps(updated_calendar)
     db.session.commit()
 
     return jsonify({'message': 'Calendar updated successfully'}), 200

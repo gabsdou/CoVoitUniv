@@ -163,6 +163,41 @@ def get_route(start_coords, end_coords, label):
     return None
 
 
+def replace_placeholders(obj):
+    """
+    Recursively traverse 'obj' (which can be dict, list, or string)
+    and replace certain placeholder words with full addresses.
+    Returns the updated object.
+    """
+    # Define your placeholders -> real addresses
+    replacements = {
+        "Villetaneuse": "99 Av. Jean Baptiste Clément, 93430 Villetaneuse",
+        "Bobigny": "74 Rue Marcel Cachin, 93000 Bobigny",
+        "Saint-Denis": "Place du 8 Mai 1945, 93200, Saint-Denis"
+    }
+
+    if isinstance(obj, dict):
+        # Recurse into each key/value
+        for key, value in obj.items():
+            obj[key] = replace_placeholders(value)
+        return obj
+
+    elif isinstance(obj, list):
+        # Recurse into each element
+        for i in range(len(obj)):
+            obj[i] = replace_placeholders(obj[i])
+        return obj
+
+    elif isinstance(obj, str):
+        # Perform string replacements for each placeholder
+        for placeholder, full_address in replacements.items():
+            obj = obj.replace(placeholder, full_address)
+        return obj
+
+    else:
+        # If it's an int, float, bool, or None, just return as is
+        return obj
+
 if __name__ == '__main__':
     with app.app_context():  # Crée un contexte de l'application
         db.create_all()  # Crée la base de données si elle n'existe pas encore
