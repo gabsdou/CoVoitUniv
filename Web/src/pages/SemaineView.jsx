@@ -52,7 +52,7 @@ function SemaineView({ week, userId, onBack }) {
 
     if (adresse.includes("74 Rue Marcel Cachin, 93000 Bobigny")) return "Bobigny";
     if (adresse.includes("99 Av. Jean Baptiste Clément, 93430 Villetaneuse")) return "Villetaneuse";
-    if (adresse.includes("Place du 8 Mai 1945, 93200, Saint-Denis-Denis")) return "Saint-Denis";
+    if (adresse.includes("Place du 8 Mai 1945, 93200, Saint-Denis")) return "Saint-Denis";
     if (adresse.includes("Maison")) return "Maison"; // Si déjà formaté
 
     return "Maison"; // Si aucune correspondance, on met "Maison"
