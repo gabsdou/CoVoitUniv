@@ -313,17 +313,20 @@ def request_ride():
 
 
 
-@app.route('/find_passengers', methods=['GET'])
+@app.route('/find_passengers', methods=['POST'])
 def find_passengers():
-   
+    # Parse JSON body
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Missing JSON body"}), 400
 
-    driver_id = request.args.get('driver_id')
-    day = request.args.get('day')
-    time_slot = request.args.get('time_slot', default='morning')  # Default to morning if omitted
+    # Extract required fields from JSON
+    driver_id = data.get('user_id')
+    day = data.get('day')
+    time_slot = data.get('time_slot', 'morning')  # default to "morning" if not provided
 
-    # Validate input
     if not driver_id or not day:
-        return jsonify({"error": "Missing required parameters (driver_id, day)"}), 400
+        return jsonify({"error": "Missing required parameters ('driver_id', 'day')"}), 400
 
     # 1) Fetch the driver
     driver = User.query.filter_by(id=driver_id).first()
@@ -338,14 +341,26 @@ def find_passengers():
         except (json.JSONDecodeError, TypeError):
             return jsonify({"error": "Driver calendar is invalid JSON"}), 400
 
-    
+    # Example calendar structure:
+    # {
+    #   "weekNumber": 6,
+    #   "days": [
+    #     {
+    #       "date": "2025-02-03T23:00:00.000Z",
+    #       "startHour": 9,
+    #       "endHour": 17,
+    #       "matinDestination": "Villetaneuse",
+    #       "soirDestination": "Bobigny"
+    #     },
+    #     ...
+    #   ]
+    # }
 
     days_list = driver_calendar.get("days", [])
     if not isinstance(days_list, list):
         return jsonify({"error": "Driver calendar has no valid 'days' list"}), 400
 
     # 3) Find the day entry matching the requested date
-    #    We'll do a simple substring check: if day_str in day_info["date"]
     day_info = None
     for d in days_list:
         if isinstance(d, dict) and "date" in d and day in d["date"]:
@@ -357,13 +372,11 @@ def find_passengers():
 
     # 4) Extract the driver's start/end times
     driver_start_hour = day_info.get("startHour")
-    driver_end_hour   = day_info.get("endHour")
+    driver_end_hour = day_info.get("endHour")
     if driver_start_hour is None or driver_end_hour is None:
         return jsonify({"possible_passengers": []}), 200
 
     # 5) Determine the driver's final destination from the calendar
-    #    If time_slot == "morning", use "matinDestination"
-    #    If "evening", use "soirDestination"
     if time_slot.lower() == "morning":
         driver_destination = day_info.get("matinDestination")
         driver_time = driver_start_hour
@@ -373,7 +386,6 @@ def find_passengers():
 
     # Fall back to the driver's stored address if none found
     if not driver_destination:
-        # or you might want to return an error if no valid destination is set
         driver_destination = driver.address
 
     # 6) Geocode driver's start address + final destination
@@ -393,27 +405,19 @@ def find_passengers():
     possible_passengers = []
 
     for request_obj in ride_requests:
-        # PASSENGER TIME: If "morning", compare passenger's start_hour
-        # If "evening", compare passenger's end_hour
-        if time_slot.lower() == "morning":
-            passenger_time = request_obj.start_hour
-        else:
-            passenger_time = request_obj.end_hour
-
+        # If "morning", compare driver's startHour with passenger's start_hour
+        # If "evening", compare driver's endHour with passenger's end_hour
+        passenger_time = request_obj.start_hour if (time_slot.lower() == "morning") else request_obj.end_hour
         if passenger_time is None:
             continue
 
-        # Check difference in hours
+        # Compare times
         if abs(driver_time - passenger_time) > time_tolerance:
             continue
 
-        # Optional: if you want passengers to also have the same final destination,
-        # you might do:
-        if request_obj.destination != driver_destination and time_slot.lower() == "morning":
-             continue
-        #
-        # That depends on whether you only want passengers who are going exactly 
-        # to the same final address.
+        # (Optional) check if passenger's destination matches driver's for morning
+        if time_slot.lower() == "morning" and request_obj.destination != driver_destination:
+            continue
 
         # 8) Check route times
         passenger_coords = (request_obj.lat, request_obj.lon)
@@ -460,6 +464,7 @@ def find_passengers():
                 })
 
     return jsonify({"possible_passengers": possible_passengers}), 200
+
 
 
 
