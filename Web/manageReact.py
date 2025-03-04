@@ -31,6 +31,7 @@ class RideRequest(db.Model):
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     day = db.Column(db.String(20), nullable=False)        # e.g. "2025-02-03" or "monday"
     address = db.Column(db.String(200), nullable=False)
+    destination = db.Column(db.String(200), nullable=False)
     lat = db.Column(db.Float, nullable=True)
     lon = db.Column(db.Float, nullable=True)
     start_hour = db.Column(db.Integer, nullable=False)    # e.g. 9
@@ -245,6 +246,7 @@ def request_ride():
     user_id = data.get('user_id')
     day = data.get('day')
     address = data.get('address')
+    destination_address = data.get('destination')
     start_hour = data.get('start_hour')
     end_hour = data.get('end_hour')
 
@@ -262,6 +264,7 @@ def request_ride():
         user_id=user_id,
         day=day,
         address=address,
+        destination=destination_address,
         lat=lat,
         lon=lon,
         start_hour=start_hour,
@@ -334,6 +337,9 @@ def find_passengers():
     possible_passengers = []
 
     for request_obj in ride_requests:
+
+        if request_obj.destination != destination_address:
+            break
         # Compare passenger times vs. driver times with ±30 min tolerance
         p_start = request_obj.start_hour
         p_end   = request_obj.end_hour
