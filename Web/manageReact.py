@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy # type: ignore
 from flask_cors import CORS # type: ignore
 from testCovoit import geocode_address, get_route, replace_placeholders
 from models import db,User,RideRequest,DriverOffer  # <-- your models
+from pingMail import send_offer_email,SENDER_EMAIL,SENDER_PASSWORD
 import requests
 import uuid
 import json
@@ -12,6 +13,8 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'  # Base de données SQLite
 app.config['SECRET_KEY'] = 'your_secret_key'
 db.init_app(app)
+
+
 
 
 @app.route('/signup', methods=['POST'])
@@ -468,6 +471,23 @@ def offer_passenger():
         ride_request_id=ride_request_id,
         status="offered"
     )
+
+
+    passenger = User.query.filter_by(id=ride_request.user_id).first()
+
+    if passenger and passenger.email:
+      
+        
+        
+        # Send the notification
+        send_offer_email(
+            driver=driver,
+            passenger=passenger,
+            sender_email=SENDER_EMAIL,
+            sender_password=SENDER_PASSWORD
+        )
+
+    
     db.session.add(new_offer)
     db.session.commit()
 
