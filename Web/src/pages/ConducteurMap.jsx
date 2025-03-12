@@ -124,27 +124,41 @@ const InterfaceConducteur = () => {
     };
 
     return (
-        <div className="container">
-            <header></header>
-            <h2 style={{ textAlign: "center", margin: "20px 0" }}>Trajet du {new Date(date).toLocaleDateString('fr-FR', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    })}, le {mornEve}</h2>
-            <div id="map" style={{ width: "1000px", height: "750px" }}></div>
+        <div className="conducteur-map-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+            {/* Date centrée au-dessus */}
+            <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
+                Trajet du {new Date(date).toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                })}
+            </h2>
 
-            <div id="options-passagers">
-                <h2>Passagers Disponibles</h2>
-                <button onClick={fetchPassagers}>Charger les passagers</button>
-                <div id="passagers-list">
-                    {passagers.map((passager, index) => (
-                        <p key={index}>{passager.first_name} {passager.last_name}</p>
-                    ))}
+            {/* Conteneur avec carte à gauche et passagers à droite */}
+            <div style={{ display: "flex", justifyContent: "center", width: "100%", gap: "20px" }}>
+                {/* Carte à gauche */}
+                <div id="map" style={{ width: "70%", height: "750px" }}></div>
+
+                {/* Liste des passagers à droite */}
+                <div id="options-passagers" style={{ width: "30%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                    <h2>Passagers Disponibles</h2>
+                    <button onClick={fetchPassagers}>Charger les passagers</button>
+                    <div id="passagers-list" style={{ marginTop: "10px", width: "100%", textAlign: "center" }}>
+                        {passagers.length > 0 ? (
+                            passagers.map((passager, index) => (
+                                <p key={index}>{passager.first_name} {passager.last_name}</p>
+                            ))
+                        ) : (
+                            <p>Aucun passager trouvé.</p>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
     );
+
+
 };
 
 function ConducteurMap() {

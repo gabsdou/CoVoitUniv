@@ -106,14 +106,14 @@ function Timeline() {
                             onClick={() => handleDayClick(day.roleAller, day.date, "morning")}
                             className="btn-nav"
                         >
-                            Gérer trajet aller
+                            {day.roleAller === "conducteur" ? "Choisir mes passagers (Aller)" : "Demander un trajet (Aller)"}
                         </button>
 
                         <button
                             onClick={() => handleDayClick(day.roleRetour, day.date, "evening")}
                             className="btn-nav"
                         >
-                            Gérer trajet retour
+                            {day.roleRetour === "conducteur" ? "Choisir mes passagers (Retour)" : "Demander un trajet (Retour)"}
                         </button>
                     </li>
                 ))}
