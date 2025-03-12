@@ -20,7 +20,8 @@ function MoisView({ year, monthData,userId, onBack }) {
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('fr-FR', { month: 'long', day: 'numeric' });
   }
-
+  
+  const today = new Date().toISOString().split("T")[0];
   return (
     <div>
         <button className="BackButton" onClick={onBack}>← Retour à l'année</button>
@@ -28,12 +29,13 @@ function MoisView({ year, monthData,userId, onBack }) {
         <div className="weeks-grid">
           {weeks.map((week) => (
             <button
-              key={week.weekNumber}
-              className="week-button"
-              onClick={() => setSelectedWeek(week)}
-            >
-              Semaine du {formatDate(week.days[0])} au {formatDate(week.days[6])}
-            </button>
+            key={week.weekNumber}
+            className={`week-button ${week.days.some(day => day.toISOString().split("T")[0] === today) ? "current-week" : ""}`}
+            onClick={() => setSelectedWeek(week)}
+          >
+            Semaine du {formatDate(week.days[0])} au {formatDate(week.days[6])}
+          </button>
+          
           ))}
         </div>
 

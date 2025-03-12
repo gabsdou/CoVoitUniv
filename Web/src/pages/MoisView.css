@@ -63,3 +63,9 @@
 .BackButton:active {
   transform: scale(0.98);
 }
+
+.current-week {
+  background-color: #927e6e !important;
+  color: white;
+  font-weight: bold;
+}

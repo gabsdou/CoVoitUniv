@@ -107,3 +107,9 @@ ul.days-list li:hover {
   margin: 0 10px;
   cursor: pointer;
 }
+
+.current-month {
+  background-color: #927e6e !important;
+  color: white;
+  font-weight: bold;
+}

@@ -1,16 +1,31 @@
-import React from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 function Accueil() {
+  const { isAuthenticated, logout } = useContext(AuthContext);
   return (
     <div className="page">
       <h1>CoVoitUniv</h1>
-      <Link to="/inscription" className="nav-link nav-main">
-        S'inscrire
-      </Link>
-      <Link to="/connexion" className="nav-link nav-main">
-        Se connecter
-      </Link>
+      {!isAuthenticated ? (
+          <>
+            <Link to="/inscription" className="nav-link nav-main">
+              S'inscrire
+            </Link>
+            <Link to="/connexion" className="nav-link nav-main">
+              Connexion
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link to="/calendrier" className="nav-link nav-main">
+            Mon EDT
+            </Link>
+            <Link to="/timeline" className="nav-link nav-main">
+            Mes trajets
+            </Link>
+          </>
+        )}
       <p>
         Le covoiturage présente de nombreux avantages, notamment la réduction
         des coûts de transport, la diminution de l'empreinte carbone et la
@@ -25,3 +40,4 @@ function Accueil() {
 }
 
 export default Accueil;
+
