@@ -16,6 +16,13 @@ const InterfaceConducteur = () => {
     const [passagers, setPassagers] = useState([]);
     const [map, setMap] = useState(null);
     const location = useLocation();
+    const [markers, setMarkers] = useState({});
+    const [conducteurMarker, setConducteurMarker] = useState(null);
+    const [destinationMarker, setDestinationMarker] = useState(null);
+    const [layerGroup, setLayerGroup] = useState(null);
+
+
+
     const {passCond, date , mornEve} = location.state || {}; // Récupérer les données passées
     //fix bug des icones
     delete L.Icon.Default.prototype._getIconUrl;
@@ -48,80 +55,165 @@ const InterfaceConducteur = () => {
             })
                 .catch(error => console.error("Erreur lors de la récupération des données utilisateur:", error));
         }
+        const newLayerGroup = L.layerGroup().addTo(newMap);
+        setLayerGroup(newLayerGroup);
+        setMap(newMap);
 
         return () => newMap.remove();
     }, [userId]);
+    useEffect(() => {
+        if (map && conducteurMarker && destinationMarker) {
+            afficherTrajet(map);
+        }
+    }, [map, conducteurMarker, destinationMarker, markers]);
+
+
+    useEffect(() => {
+        Object.values(markers).forEach(marker => {
+            if (!marker._map) {
+                map.removeLayer(marker);
+            }
+        });
+    }, [markers]);
 
     const afficherTrajet = (map, routesData) => {
-      if (!map || !routesData) return;
+        if (!map) {
+            console.error("Carte non disponible.");
+            return;
+        }
 
-      // Supprimer les anciens itinéraires s'ils existent
-      if (map.routeLayer) {
-          map.removeControl(map.routeLayer);
-      }
+        const waypoints = [];
 
-      // Récupérer les trajets
-      const driverToPassengerCoords = routesData.routes.driver_to_passenger.geometry;
-      const passengerToDestinationCoords = routesData.routes.passenger_to_destination.geometry;
+        // Ajouter le point de départ du conducteur
+        if (conducteurMarker) {
+            waypoints.push(conducteurMarker.getLatLng());
+        }
 
-      // Fonction pour convertir les coordonnées GeoJSON en format Leaflet
-      const convertirCoordonnees = (geoJsonCoords) => {
-          return geoJsonCoords.map(coord => [coord[1], coord[0]]); // Inverser lat/lon
-      };
+        // Ajouter les passagers cochés comme waypoints intermédiaires
+        const passagersCoches = Object.values(markers).map(marker => marker.getLatLng());
+        waypoints.push(...passagersCoches);
 
-      const route1 = convertirCoordonnees(driverToPassengerCoords);
-      const route2 = convertirCoordonnees(passengerToDestinationCoords);
+        // Ajouter la destination finale
+        if (destinationMarker) {
+            waypoints.push(destinationMarker.getLatLng());
+        }
 
-      // Ajouter les trajets à la carte avec Leaflet Routing Machine
-      map.routeLayer = L.Routing.control({
-          waypoints: [
-              L.latLng(route1[0]), // Départ du conducteur
-              L.latLng(route1[route1.length - 1]), // Arrivée chez le passager
-              L.latLng(route2[route2.length - 1])  // Destination finale du passager
-          ],
-          createMarker: function() { return null; }, // Pas de marqueurs par défaut
-          routeWhileDragging: true
-      }).addTo(map);
+        // Vérifier s'il y a au moins un trajet conducteur → destination
+        if (waypoints.length < 2) {
+            console.error("Impossible d'afficher un itinéraire.");
+            return;
+        }
+
+        // Supprimer l'ancien itinéraire s'il existe
+        if (map.routeLayer) {
+            map.removeControl(map.routeLayer);
+            map.routeLayer = null;
+        }
+
+        // Ajouter l'itinéraire sur la carte
+        map.routeLayer = L.Routing.control({
+            waypoints,
+            lineOptions: { styles: [{ color: 'blue', weight: 5 }] },
+            createMarker: function(i, waypoint, n) {
+                if (i === 0) return L.marker(waypoint.latLng).bindPopup("Départ Conducteur");
+                if (i === n - 1) return L.marker(waypoint.latLng).bindPopup("Destination Finale");
+                return L.marker(waypoint.latLng).bindPopup(`Passager ${i}`);
+            },
+            routeWhileDragging: true,
+            autoRoute: true,
+
+        }).addTo(map);
+        document.querySelector(".leaflet-routing-container")?.remove();
     };
+
+
 
 
     const fetchPassagers = async () => {
         if (!userId) return;
         try {
-
-            const response = await fetch(`http://localhost:5000/find_passengers`
-
-
-              , {
+            const response = await fetch(`http://localhost:5000/find_passengers`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ user_id: userId, timeslot: mornEve, day: date }),}
-            );
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user_id: userId, timeslot: mornEve, day: date }),
+            });
+
             const data = await response.json();
-            console.log(data);
-            if (data.possible_passengers.length === 0) {
-              console.log("Aucun passager trouvé.");
-              return;
+            console.log("Passagers récupérés :", data);
+
+            if (!data.possible_passengers || data.possible_passengers.length === 0) {
+                console.log("Aucun passager trouvé.");
+                return;
             }
+
             setPassagers(data.possible_passengers);
 
-            // Ajouter des marqueurs sur la carte pour les passagers
-            data.possible_passengers.forEach(passager => {
-              if (passager.geometry) {
-                  L.marker([passager.geometry[1], passager.geometry[0]])
-                   .addTo(map)
-                   .bindPopup(`${passager.first_name} ${passager.last_name} - ${passager.address}`);
-              }
-          });
+            // 🔹 Affichage du conducteur et de la destination en permanence
+            const firstPassenger = data.possible_passengers[0]; // Utiliser le premier passager comme référence
+            if (firstPassenger) {
+                const driverCoords = firstPassenger.routes.driver_to_passenger.geometry[0]; // Premier point = conducteur
+                const destinationCoords = firstPassenger.routes.passenger_to_destination.geometry[1]; // Dernier point = destination
 
-          // Afficher les trajets sur la carte
-          afficherTrajet(map, data);
+                // Afficher le marqueur du conducteur
+                if (!conducteurMarker) {
+                    const driverMarker = L.marker([driverCoords[0], driverCoords[1]])
+                        .addTo(map)
+                        .bindPopup("Conducteur");
+                    setConducteurMarker(driverMarker);
+                }
+
+                // Afficher le marqueur de la destination
+                if (!destinationMarker) {
+                    const destMarker = L.marker([destinationCoords[0], destinationCoords[1]])
+                        .addTo(map)
+                        .bindPopup("Destination Finale");
+                    setDestinationMarker(destMarker);
+                }
+            }
         } catch (error) {
             console.error("Erreur lors de la récupération des passagers:", error);
         }
     };
+
+
+    const toggleMarker = (passager) => {
+        if (!layerGroup || !map) return;
+
+        const passengerId = passager.passenger_id;
+        const passengerCoords = passager.routes.driver_to_passenger.geometry[1];
+
+        setMarkers(prevMarkers => {
+            const newMarkers = { ...prevMarkers };
+
+            if (newMarkers[passengerId]) {
+                console.log(`🗑 Suppression du marqueur du passager ${passengerId}`);
+                layerGroup.removeLayer(newMarkers[passengerId]); // Suppression du marqueur
+                delete newMarkers[passengerId];
+            } else {
+                console.log(`➕ Ajout du marqueur du passager ${passengerId}`);
+
+                const marker = L.marker([passengerCoords[0], passengerCoords[1]])
+                    .bindPopup(`${passager.first_name} ${passager.last_name} - ${passager.address}`);
+
+                layerGroup.addLayer(marker); // Ajout dans le LayerGroup
+                newMarkers[passengerId] = marker;
+                // Ajuster la vue pour englober tous les marqueurs et le trajet
+                const allMarkers = Object.values(newMarkers).map(marker => marker.getLatLng());
+
+                // Ajouter le conducteur et la destination s'ils existent
+                if (conducteurMarker) allMarkers.push(conducteurMarker.getLatLng());
+                if (destinationMarker) allMarkers.push(destinationMarker.getLatLng());
+
+                if (allMarkers.length > 1) {
+                    const bounds = L.latLngBounds(allMarkers);
+                    map.fitBounds(bounds, { padding: [50, 50] }); // Ajuster le zoom
+                }
+            }
+
+            return newMarkers; // Met à jour l'état des marqueurs
+        });
+    };
+
 
     return (
         <div className="conducteur-map-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
@@ -145,13 +237,20 @@ const InterfaceConducteur = () => {
                     <h2>Passagers Disponibles</h2>
                     <button onClick={fetchPassagers}>Charger les passagers</button>
                     <div id="passagers-list" style={{ marginTop: "10px", width: "100%", textAlign: "center" }}>
-                        {passagers.length > 0 ? (
-                            passagers.map((passager, index) => (
-                                <p key={index}>{passager.first_name} {passager.last_name}</p>
-                            ))
-                        ) : (
-                            <p>Aucun passager trouvé.</p>
-                        )}
+                    {passagers.length > 0 ? (
+                        passagers.map((passager) => (
+                            <div key={passager.passenger_id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "80%" }}>
+                                <p>{passager.first_name} {passager.last_name}</p>
+                                <input
+                                    type="checkbox"
+                                    onChange={() => toggleMarker(passager)}
+                                />
+                            </div>
+                        ))
+                    ) : (
+                        <p>Aucun passager trouvé.</p>
+                    )}
+
                     </div>
                 </div>
             </div>
