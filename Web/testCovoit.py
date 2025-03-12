@@ -11,10 +11,10 @@ def geocode_address(address):
     url = f'https://api-adresse.data.gouv.fr/search/?q={address}&limit=1'
 
 
-    cached_entry = AddressCache.query.filter_by(address=address).first()
-    if cached_entry:
-        print(f"Cache hit for address: {address}")
-        return (cached_entry.lat, cached_entry.lon)
+    #cached_entry = AddressCache.query.filter_by(address=address).first()
+    #if cached_entry:
+    #    print(f"Cache hit for address: {address}")
+    #    return (cached_entry.lat, cached_entry.lon)
 
     print(f"Cache miss for address: {address}. Calling Nominatim API...")
  
@@ -37,9 +37,9 @@ def geocode_address(address):
                     if isinstance(lat, (int, float)) and isinstance(lon, (int, float)):
                         lat = round(lat, 6)
                         lon = round(lon, 6)
-                        new_entry = AddressCache(address=address, lat=lat, lon=lon)
-                        db.session.add(new_entry)
-                        db.session.commit()
+                        #new_entry = AddressCache(address=address, lat=lat, lon=lon)
+                        #db.session.add(new_entry)
+                        #db.session.commit()
                         return lat, lon
                     else:
                         raise ValueError("Les coordonnées ne sont pas valides")
