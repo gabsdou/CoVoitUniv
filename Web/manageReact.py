@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, send_from_
 from flask_sqlalchemy import SQLAlchemy # type: ignore
 from flask_cors import CORS # type: ignore
 from testCovoit import geocode_address, get_route, replace_placeholders
-from models import db  # <-- your models
+from models import db,User,RideRequest,DriverOffer  # <-- your models
 import requests
 import uuid
 import json
