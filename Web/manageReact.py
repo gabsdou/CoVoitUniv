@@ -451,7 +451,7 @@ def offer_passenger():
         return jsonify({"error": "Missing driver_id or ride_request_id"}), 400
 
     driver = User.query.filter_by(id=driver_id).first()
-    if not driver or not driver.is_driver:
+    if not driver:
         return jsonify({"error": "Invalid driver"}), 400
 
     ride_request = RideRequest.query.filter_by(id=ride_request_id).first()
