@@ -35,9 +35,6 @@ function Header() {
             <Link to="/calendrier" className="nav-link nav-edt">
             Mon EDT
             </Link>
-            <Link to="/InterfaceConducteur" className="nav-link nav-conducteur">
-            Carte Conducteur
-            </Link>
             <Link to="/timeline" className="nav-link">
             Mes trajets
             </Link>
