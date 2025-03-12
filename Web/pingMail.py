@@ -5,7 +5,7 @@ from email.mime.multipart import MIMEMultipart
 
   # Use your Gmail address and password (stored securely or in environment variables)
 SENDER_EMAIL = "noreplycovoitbot@gmail.com"
-SENDER_PASSWORD = "gabpizza"
+SENDER_PASSWORD = "Gabpizza"
 
 
 def send_email_via_gmail(sender_email, sender_password, to_email, subject, body):
