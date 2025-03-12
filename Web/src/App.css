@@ -55,6 +55,15 @@ body {
   margin-top: 90px; /* Ajustez selon la hauteur du header */
 }
 
+footer{
+  background-color: #4848a1;
+  color: white;
+  text-align: center;
+  padding: 10px;
+  bottom: 0;
+  width: 100%;
+}
+
 .nav-main {
   background-color: #927e6e;
   font-size: 25px;
