@@ -1,110 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for,send_from_directory, flash
-from flask_sqlalchemy import SQLAlchemy
-from manageReact import AddressCache
+
+from models import AddressCache, db
 import polyline
 import requests
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'  # Base de données SQLite
-app.config['SECRET_KEY'] = 'your_secret_key'
-db = SQLAlchemy(app)
 
 
-# Modèle pour les utilisateurs
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
-    first_name = db.Column(db.String(100), nullable=False)
-    last_name = db.Column(db.String(100), nullable=False)
-    address = db.Column(db.String(200), nullable=False)
-    is_driver = db.Column(db.Boolean, default=False)
-
-
-@app.route('/', methods=['GET', 'POST'])
-def login():
-    """Page de connexion."""
-    if request.method == 'POST':
-        numero = request.form['numero_etudiant']
-        
-        # Vérifier si l'utilisateur existe dans la base de données
-        user = User.query.filter_by(id=numero).first()
-        
-        if user:
-            # Si l'utilisateur existe, rediriger vers son profil
-            return redirect(url_for('user_profile', user_id=user.id))
-        else:
-            # Si l'utilisateur n'existe pas, afficher un message d'erreur ou un bouton vers l'inscription
-            return redirect(url_for('signup'))
-    
-    return render_template('login.html', error=None)
-
-
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    """Page d'inscription avec formulaire."""
-    if request.method == 'POST':
-        numero = request.form['numero_etudiant']
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        address = request.form['address']
-        is_driver = True if request.form.get('is_driver') == 'on' else False
-
-        # Vérifier si l'adresse est valide
-        lat, lon = geocode_address(address)
-
-        if lat and lon:
-            # Ajouter l'utilisateur à la base de données si l'adresse est valide
-            new_user = User(id=numero, first_name=first_name, last_name=last_name, address=address, is_driver=is_driver)
-            db.session.add(new_user)
-            db.session.commit()
-
-            flash('Inscription réussie !', 'success')
-            return redirect(url_for('user_profile', user_id=new_user.id))
-        else:
-            # Si l'adresse est invalide, afficher un message d'erreur
-            flash('Adresse invalide. Veuillez entrer une adresse valide.', 'danger')
-
-    return render_template('testcovoit.html')
-
-@app.route('/leaflet/<path:filename>')
-def leaflet_static(filename):
-    return send_from_directory('leaflet', filename)
-
-@app.route('/leaflet-routing-machine/<path:filename>')
-def leaflet_routing_machine_static(filename):
-    return send_from_directory('leaflet-routing-machine', filename)
-
-@app.route('/user/<int:user_id>', methods=['GET', 'POST'])
-def user_profile(user_id):
-    """Page de profil d'un utilisateur."""
-    user = User.query.get_or_404(user_id)
-    routes = []
-
-    # Adresse fixe (hardcodée)
-    hardcoded_address = "99 Av. Jean Baptiste Clément, 93430 Villetaneuse"
-
-    # Chercher tous les autres utilisateurs (en excluant l'utilisateur actuel)
-    other_users = User.query.filter(User.id != user_id).all()
-
-    for other_user in other_users:
-        # Géocodage des adresses des utilisateurs
-        print(other_user.address)
-        other_coords = geocode_address(other_user.address) if other_user else None
-        
-        # Calculer les trajets possibles
-        if other_coords:
-            routes.append({
-                'name': other_user.first_name,
-                'route': (other_coords),
-            })
-
-    user_coords = geocode_address(user.address)
-    user = {
-        'name': user.first_name,
-        'address': user.address,
-        'coords': user_coords
-    }
-
-    return render_template('Conducteur.html', user=user, routes=routes)
 
 
 def geocode_address(address):
@@ -218,7 +118,4 @@ def replace_placeholders(obj, user_address):
         return obj
 
 
-if __name__ == '__main__':
-    with app.app_context():  # Crée un contexte de l'application
-        db.create_all()  # Crée la base de données si elle n'existe pas encore
-    app.run(debug=True)
+    
