@@ -311,6 +311,8 @@ def find_passengers():
     if not isinstance(days_list, list):
         return jsonify({"error": "Driver calendar has no valid 'days' list"}), 400
 
+
+    
     # 3) Find the day entry matching the requested date
     day_info = None
     for d in days_list:
@@ -390,6 +392,7 @@ flush=True)
             print(f"No route found from passenger {request_obj.id} to destination",flush=True)
             continue
         print(f"Route to destination: {route_to_destination}",flush=True)
+        normaltime = get_route(driver_coords, dest_coords, "Driver->Destination")
         # Calculate total duration
         total_duration = route_to_passenger["duration"] + route_to_destination["duration"]
         # If total detour <= 60 minutes
@@ -408,7 +411,8 @@ flush=True)
                     "start_hour": request_obj.start_hour,
                     "end_hour": request_obj.end_hour,
                     "driver_destination": driver_destination,
-                    "route_duration_minutes": total_duration,
+                    "passengers_duration": total_duration,
+                    "normal_duration": normaltime["duration"],
                     "routes": {
                         "driver_to_passenger": {
                             "duration": route_to_passenger["duration"],
