@@ -16,6 +16,8 @@ dayjs.extend(isSameOrBefore);
 
 const YEAR = 2025;
 
+
+
 // Génère la liste des mois de l'année (0 = janvier, 1 = février, etc.)
 const MONTH_NAMES = [
   "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
@@ -66,19 +68,20 @@ function Calendrier2025({  }) {
   }
 
   // Sinon on affiche la liste des 12 mois
+  const today = dayjs();
   return (
     <div>
       <h1>Calendrier Année {YEAR}</h1>
       <div className="months-container">
         {MONTH_NAMES.map((m, i) => (
           <div
-            key={i}
-            onClick={() => setSelectedMonth(i)}
-            id={`month-${i}`}
-            className="month-box"
-          >
-            {m}
-          </div>
+          key={i}
+          onClick={() => setSelectedMonth(i)}
+          id={`month-${i}`}
+          className={`month-box ${today.month() === i ? "current-month" : ""}`}
+        >
+          {m}
+        </div>
         ))}
       </div>
     </div>
