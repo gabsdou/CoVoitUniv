@@ -1,0 +1,66 @@
+/* Timeline.css */
+.timeline-container {
+    max-width: 1600px;
+    margin: 30px auto;
+    padding: 20px;
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-container h1 {
+    text-align: center;
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.timeline-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.timeline-list li {
+    background-color: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-left: 5px solid #007bff;
+}
+
+.timeline-list li strong {
+    font-size: 18px;
+    color: #007bff;
+}
+
+.timeline-list li p {
+    margin: 5px 0;
+    font-size: 16px;
+    color: #555;
+}
+
+/* Effet au survol */
+.timeline-list li:hover {
+    background-color: #f1f1f1;
+    transition: 0.3s;
+}
+
+.btn-nav {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    margin-top: 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: block; /* Pour éviter qu'ils soient collés */
+    width: 100%;
+    text-align: center;
+}
+
+.btn-nav:hover {
+    background-color: #0056b3;
+}

@@ -37,16 +37,21 @@ const InterfaceConducteur = () => {
         // Récupération des données utilisateur
         if (userId) {
             fetch(`http://localhost:3000/user/${userId}`)
-                .then(response => response.json())
-                .then(data => {
-                    setUserData(data);
-                    L.marker(data.coords).addTo(newMap).bindPopup("Vous êtes ici");
-                })
+            .then(response => response.json())
+            .then(data => {
+                setUserData(data);
+                if (data.lat && data.lon) {
+                    L.marker([data.lat, data.lon])
+                        .addTo(newMap)
+                        .bindPopup("Votre adresse");
+                }
+            })
                 .catch(error => console.error("Erreur lors de la récupération des données utilisateur:", error));
         }
 
         return () => newMap.remove();
     }, [userId]);
+
     const afficherTrajet = (map, routesData) => {
       if (!map || !routesData) return;
 
@@ -77,7 +82,7 @@ const InterfaceConducteur = () => {
           createMarker: function() { return null; }, // Pas de marqueurs par défaut
           routeWhileDragging: true
       }).addTo(map);
-  };
+    };
 
 
     const fetchPassagers = async () => {
@@ -107,7 +112,7 @@ const InterfaceConducteur = () => {
               if (passager.geometry) {
                   L.marker([passager.geometry[1], passager.geometry[0]])
                    .addTo(map)
-                   .bindPopup(`${passager.first_name} ${passager.last_name}`);
+                   .bindPopup(`${passager.first_name} ${passager.last_name} - ${passager.address}`);
               }
           });
 
@@ -121,7 +126,14 @@ const InterfaceConducteur = () => {
     return (
         <div className="container">
             <header></header>
+            <h2 style={{ textAlign: "center", margin: "20px 0" }}>Trajet du {new Date(date).toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    })}, le {mornEve}</h2>
             <div id="map" style={{ width: "1000px", height: "750px" }}></div>
+
             <div id="options-passagers">
                 <h2>Passagers Disponibles</h2>
                 <button onClick={fetchPassagers}>Charger les passagers</button>
@@ -138,6 +150,8 @@ const InterfaceConducteur = () => {
 function ConducteurMap() {
     return (
         <div>
+
+
             <InterfaceConducteur />
         </div>
     );

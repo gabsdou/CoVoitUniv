@@ -38,6 +38,9 @@ function Header() {
             <Link to="/InterfaceConducteur" className="nav-link nav-conducteur">
             Carte Conducteur
             </Link>
+            <Link to="/timeline" className="nav-link">
+            Mes trajets
+            </Link>
 
             <button onClick={handleLogout} className="nav-link nav-contact">
               Se déconnecter

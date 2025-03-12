@@ -7,6 +7,8 @@ import Inscription from "./pages/Inscription";
 import Connexion from "./pages/Connexion";
 import ConducteurMap from "./pages/ConducteurMap";
 import { AuthProvider } from "./context/AuthContext";
+import Timeline from "./pages/Timeline";
+
 import Calendrier from "./pages/Calendrier";
 import "./App.css";
 
@@ -24,6 +26,8 @@ function App() {
             <Route path ="/connexion" element={<Connexion />} />
             <Route path="/InterfaceConducteur" element={<ConducteurMap />} />
             <Route path="/Calendrier" element={<Calendrier />} />
+            <Route path="/timeline" element={<Timeline />} />
+
           </Routes>
         </main>
         <Footer />

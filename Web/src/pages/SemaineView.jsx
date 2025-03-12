@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import ToggleSwitch from "./ToggleSwitch";
+
 import { useNavigate } from "react-router-dom";
 
 import "./SemaineView.css";
@@ -10,6 +12,13 @@ function SemaineView({ week, userId, onBack }) {
     const dayOfWeek = new Date(date).getDay();
     return dayOfWeek !== 0 && dayOfWeek !== 6; // Exclure dimanche (0) et samedi (6)
   });
+  const [roles, setRoles] = useState(
+    weekdays.reduce((acc, day) => {
+        acc[day] = { aller: "passager", retour: "passager" }; // Valeur par défaut
+        return acc;
+    }, {})
+);
+
 
   const [daysHours, setDaysHours] = useState([]);
 
@@ -30,10 +39,20 @@ function SemaineView({ week, userId, onBack }) {
             departRetour: normaliserAdresse(day.departRetour),
             destinationRetour: normaliserAdresse(day.destinationRetour),
           })));
+          setRoles(
+            data.calendar.days.reduce((acc, day) => {
+              acc[day.date] = {
+                aller: day.roleAller || "passager",
+                retour: day.roleRetour || "passager"
+              };
+              return acc;
+            }, {})
+          );
         } else {
           console.warn("Aucune donnée trouvée pour cette semaine. Utilisation des horaires par défaut.");
           setDaysHours(getDefaultWeekSchedule(weekdays));
         }
+
       } catch (error) {
         console.error("Erreur lors de la récupération des données de la semaine :", error);
         setDaysHours(getDefaultWeekSchedule(weekdays));
@@ -67,6 +86,8 @@ function SemaineView({ week, userId, onBack }) {
       destinationAller: "Villetaneuse",
       departRetour: "Villetaneuse",
       destinationRetour: "Maison",
+      roleAller: "passager",
+      roleRetour: "passager"
     }));
   };
   const saveJsonToFile = (jsonData, filename) => {
@@ -80,21 +101,6 @@ function SemaineView({ week, userId, onBack }) {
     document.body.removeChild(link);
   };
   const handleSaveWeek = async () => {
-    const dataToSave = {
-      user_id: userId,
-      calendar_changes: {
-          weekNumber: week.weekNumber,
-          days: daysHours.map(day => ({
-              date: day.date,
-              startHour: day.startHour,
-              endHour: day.endHour,
-              departAller: day.departAller,
-              destinationAller: day.destinationAller,
-              departRetour: day.departRetour,
-              destinationRetour: day.destinationRetour,
-          })),
-      },
-    };
     //saveJsonToFile(dataToSave, `calendar_week_${week.weekNumber}.json`);
     try {
         const response = await fetch("http://localhost:5000/saveCal", {
@@ -106,17 +112,21 @@ function SemaineView({ week, userId, onBack }) {
             body: JSON.stringify({
                 user_id: userId,
                 calendar_changes: {
-                    weekNumber: week.weekNumber,
-                    days: daysHours.map(day => ({
-                        date: day.date,
-                        startHour: day.startHour,
-                        endHour: day.endHour,
-                        departAller: day.departAller,
-                        destinationAller: day.destinationAller,
-                        departRetour: day.departRetour,
-                        destinationRetour: day.destinationRetour,
-                    })),
-                },
+                  weekNumber: week.weekNumber,
+                  days: daysHours.map(day => ({
+                      date: day.date,
+                      startHour: day.startHour,
+                      endHour: day.endHour,
+                      departAller: day.departAller,
+                      destinationAller: day.destinationAller,
+                      roleAller: roles[day.date]?.aller || "passager",  // Ajout du rôle aller
+                      departRetour: day.departRetour,
+                      destinationRetour: day.destinationRetour,
+                      roleRetour: roles[day.date]?.retour || "passager" // Ajout du rôle retour
+                  })),
+              }
+
+              ,
             }),
         });
 
@@ -286,9 +296,24 @@ function SemaineView({ week, userId, onBack }) {
                 </select>
                 <br/>
 
+                <div className="switch-container">
+                    <label>Rôle à l'aller :</label>
+                    <ToggleSwitch
+                        checked={roles[dayObj.date]?.aller === "conducteur"}
+                        onChange={() =>
+                            setRoles(prevRoles => ({
+                                ...prevRoles,
+                                [dayObj.date]: {
+                                    ...prevRoles[dayObj.date],
+                                    aller: prevRoles[dayObj.date]?.aller === "conducteur" ? "passager" : "conducteur"
+                                }
+                            }))
+                        }
+                    />
+                    <span className="switch-text">{roles[dayObj.date]?.aller === "conducteur" ? "🚗 Conducteur" : "🧍 Passager"}</span>
+                </div>
 
-                <button onClick={() => handleNavigate("conducteur",date, "morning")} className="button-depart-navig">Je veux être conducteur à l'aller</button>
-                <button onClick={() => handleNavigate("passager",date, "morning")} className="button-depart-navig">Je veux être passager à l'aller</button>
+
                 <label htmlFor='depart-select'>Départ Retour</label>
                 <br/>
                 <select id='depart-select' value={dayObj.departRetour} onChange={(e) => handleDepartRetourChange(dayIndex, e.target.value)}>
@@ -308,9 +333,24 @@ function SemaineView({ week, userId, onBack }) {
                     <option value="Bobigny">Bobigny</option>
                 </select>
                 <br/>
+                <div className="switch-container">
+                    <label>Rôle au retour :</label>
+                    <ToggleSwitch
+                        checked={roles[dayObj.date]?.retour === "conducteur"}
+                        onChange={() =>
+                            setRoles(prevRoles => ({
+                                ...prevRoles,
+                                [dayObj.date]: {
+                                    ...prevRoles[dayObj.date],
+                                    retour: prevRoles[dayObj.date]?.retour === "conducteur" ? "passager" : "conducteur"
+                                }
+                            }))
+                        }
+                    />
+                    <span className="switch-text">{roles[dayObj.date]?.retour === "conducteur" ? "🚗 Conducteur" : "🧍 Passager"}</span>
+                </div>
 
-                <button onClick={() => handleNavigate("conducteur",date, "evening")} className="button-depart-navig">Je veux être conducteur au retour</button>
-                <button onClick={() => handleNavigate("passager",date, "evening")} className="button-depart-navig">Je veux être passager au retour</button>
+
 
 
               </div>
