@@ -1,7 +1,10 @@
 import subprocess
 import time
 import unittest
+
+import requests
 from selenium import webdriver
+from selenium.common.exceptions import UnexpectedAlertPresentException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
@@ -9,6 +12,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import os
 import threading
+import json
 
 stop_thread = False
 
@@ -18,35 +22,35 @@ users = [
         "password": "password1",
         "last_name": "Dupont",
         "first_name": "Jean",
-        "address": "10 Rue de Rivoli"
+        "address": "10 Rue de Rivoli, 75004 Paris"
     },
     {
         "email": "user2@example.com",
         "password": "password2",
         "last_name": "Martin",
         "first_name": "Marie",
-        "address": "20 Avenue des Champs-Élysées"
+        "address": "20 Avenue des Champs-Élysées, 75008 Paris"
     },
     {
         "email": "user3@example.com",
         "password": "password3",
         "last_name": "Bernard",
         "first_name": "Luc",
-        "address": "30 Boulevard Saint-Germain"
+        "address": "30 Boulevard Saint-Germain, 75005 Paris "
     },
     {
         "email": "user4@example.com",
         "password": "password4",
         "last_name": "Dubois",
         "first_name": "Sophie",
-        "address": "40 Rue de la Paix"
+        "address": "40 Rue de la Paix, 75002 Paris"
     },
     {
         "email": "user5@example.com",
         "password": "password5",
         "last_name": "Moreau",
         "first_name": "Pierre",
-        "address": "50 Rue du Faubourg Saint-Honoré"
+        "address": "50 Rue du Faubourg Saint-Honoré, 75008 Paris"
     }
 ]
 
@@ -116,32 +120,96 @@ class TestUserRelation(unittest.TestCase):
         self.driver.quit()
 
     def test_user_relation(self):
-        driver = self.driver
-        print(f"Il y a {len(users)} utilisateurs à insérer.")
+        url_signup = 'http://127.0.0.1:5000/signup'
         for user in users:
-            driver.find_element(By.LINK_TEXT, "S'inscrire").click()
-            time.sleep(5)
+            data_signup = {
+                "email": user["email"],
+                "first_name": user["first_name"],
+                "last_name": user["last_name"],
+                "address": user["address"],
+                "password": user["password"],
+                "is_driver": 1
+            }
 
-            # Wait for the email field to be present
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "email")))
+            print(data_signup)
 
-            driver.find_element(By.ID, "email").send_keys(user["email"])
-            driver.find_element(By.ID, "password").send_keys(user["password"])
-            driver.find_element(By.ID, "last_name").send_keys(user["last_name"])
-            driver.find_element(By.ID, "first_name").send_keys(user["first_name"])
-            driver.find_element(By.ID, "address").send_keys(user["address"])
+            response = requests.post(url_signup, json=data_signup)
+            response_data = response.json()
 
-            is_driver_checkbox = driver.find_element(By.ID, "is_driver")
-            if not is_driver_checkbox.is_selected():
-                is_driver_checkbox.click()
+            self.assertEqual(response_data["status"], "success", f"User creation failed for {user['email']}")
+            self.assertEqual(response_data["message"], "Inscription réussie !", f"Unexpected message for {user['email']}")
+            self.assertIn("user_id", response_data, f"user_id not found in response for {user['email']}")
+            print(f"User {user['email']} created successfully.")
 
-            driver.find_element(By.CLASS_NAME, "submit-btn").click()
-            time.sleep(3)
+        url_login = 'http://localhost:5000/login'
 
-            success_message = driver.find_element(By.CLASS_NAME, "success-message")
-            self.assertTrue(success_message.is_displayed(), f"User creation failed for {user['email']} or success message not found.")
+        log_user1 = {
+            "email": users[0]["email"],
+            "password": users[0]["password"]
+        }
 
-            driver.refresh()
+        request_login = requests.post(url_login, json=log_user1)
+
+        response_login = request_login.json()
+
+        user1_id = response_login.get('token')
+
+        url_cal = 'http://localhost:5000/saveCal'
+
+        calendar_user1 = 'calendar_user1.json'
+        with open(calendar_user1, 'r') as file:
+            data_cal = json.load(file)
+
+        data_cal.update({'user_id': user1_id})
+
+        rep_cal = requests.post(url_cal, json=data_cal)
+
+        # Assert the response message
+        assert(rep_cal.json().get('message') == 'Calendar updated successfully')
+
+        calendar_user = 'calendar_rest.json'
+        for i in range(1, len(users)):
+            log_user = {
+                "email": users[i]["email"],
+                "password": users[i]["password"]
+            }
+
+            request_login = requests.post(url_login, json=log_user)
+
+            response_login = request_login.json()
+
+            user_id = response_login.get('token')
+
+            with open(calendar_user, 'r') as file:
+                data_cal_rest = json.load(file)
+
+            data_cal_rest.update({'user_id': user_id})
+
+            rep_cal = requests.post(url_cal, json=data_cal_rest)
+
+            assert(rep_cal.json().get('message') == 'Calendar updated successfully')
+
+            # Open a page that logs the user
+            # self.driver.get("http://localhost:3000/connexion")
+            # time.sleep(2)
+            # self.driver.find_element(By.ID, "email").send_keys(users[i]["email"])
+            # self.driver.find_element(By.ID, "password").send_keys(users[i]["password"])
+            # self.driver.find_element(By.CLASS_NAME, "submit-btn").click()
+            # time.sleep(3)
+            # traject = self.driver.find_element(By.LINK_TEXT, 'Mes trajets')
+            # traject.click()
+            # time.sleep(3)
+            # btn_nav_elements = self.driver.find_elements(By.CLASS_NAME, "btn-nav")
+            # print(f"Number of elements: {len(btn_nav_elements)}")
+            # print(f'i = {i}')
+            # btn_nav_elements[i-1].click()
+            # time.sleep(3)
+            # alert = self.driver.switch_to.alert
+            # alert.accept()
+            # print("Unexpected alert accepted.")
+
+
+
 
 
 
