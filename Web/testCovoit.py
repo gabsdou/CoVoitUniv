@@ -8,7 +8,7 @@ import requests
 
 
 def geocode_address(address):
-    url = f'https://nominatim.openstreetmap.org/search?q={address}&format=json'
+    url = f'https://api-adresse.data.gouv.fr/search/?q={address}&limit=1'
 
 
     cached_entry = AddressCache.query.filter_by(address=address).first()
@@ -17,16 +17,15 @@ def geocode_address(address):
         return (cached_entry.lat, cached_entry.lon)
 
     print(f"Cache miss for address: {address}. Calling Nominatim API...")
-    headers = {
-        'User-Agent': 'CovoitUnivTest/1.0 (timothee.mbassidje@edu.univ-paris13.fr)'
-    }
-    response = requests.get(url, headers=headers)
+ 
+    response = requests.get(url)
      # Vérifier si la réponse est valide et contient des données
     if response.status_code == 200:
         data = response.json()
         if data:
-            lat = data[0].get('lat')
-            lon = data[0].get('lon')
+            coords = data["features"][0]["geometry"]["coordinates"]
+            lat = coords[1]
+            lon = coords[0]
             
             # Vérifier si lat et lon sont valides (pas de None ou 'undefined')
             if lat is not None and lon is not None:
