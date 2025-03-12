@@ -66,8 +66,7 @@ def get_route(start_coords, end_coords, label):
     data = response.json()
     if "routes" in data and data["routes"]:
         route = data["routes"][0]
-        encoded_poly = route["geometry"]
-        coords_list = polyline.decode(encoded_poly)
+        coords_list = [start_coords, end_coords]
         return {
             "label": label,
             "distance": route["distance"] / 1000,  # En km

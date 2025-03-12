@@ -394,7 +394,7 @@ flush=True)
         total_duration = route_to_passenger["duration"] + route_to_destination["duration"]
         # If total detour <= 60 minutes
         if total_duration <= 6000:
-            print(f"Possible passenger: {request_obj.id}",flush=True)
+            print(f"Possible passenger: {request_obj.user_id}",flush=True)
             passenger_user = User.query.filter_by(id=request_obj.user_id).first()
             if passenger_user:
                 possible_passengers.append({
