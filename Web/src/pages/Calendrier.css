@@ -113,3 +113,22 @@ ul.days-list li:hover {
   color: white;
   font-weight: bold;
 }
+
+.today-button {
+  background-color: #927e6e; /* Orange vif */
+  color: white;
+  font-size: 16px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 20px auto; /* Ajout de la marge auto pour centrer */
+  display: block; /* Pour que margin auto fonctionne */
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.today-button:hover {
+  background-color: #23235A; /* Orange foncé au survol */
+}
+
