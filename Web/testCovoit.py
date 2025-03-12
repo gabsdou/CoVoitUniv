@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for,send_from_directory, flash
 from flask_sqlalchemy import SQLAlchemy
-
+from manageReact import AddressCache
+import polyline
 import requests
 
 app = Flask(__name__)
@@ -108,6 +109,14 @@ def user_profile(user_id):
 
 def geocode_address(address):
     url = f'https://nominatim.openstreetmap.org/search?q={address}&format=json'
+
+
+    cached_entry = AddressCache.query.filter_by(address=address).first()
+    if cached_entry:
+        print(f"Cache hit for address: {address}")
+        return (cached_entry.lat, cached_entry.lon)
+
+    print(f"Cache miss for address: {address}. Calling Nominatim API...")
     headers = {
         'User-Agent': 'CovoitUnivTest/1.0 (timothee.mbassidje@edu.univ-paris13.fr)'
     }
@@ -129,6 +138,9 @@ def geocode_address(address):
                     if isinstance(lat, (int, float)) and isinstance(lon, (int, float)):
                         lat = round(lat, 6)
                         lon = round(lon, 6)
+                        new_entry = AddressCache(address=address, lat=lat, lon=lon)
+                        db.session.add(new_entry)
+                        db.session.commit()
                         return lat, lon
                     else:
                         raise ValueError("Les coordonnées ne sont pas valides")
@@ -154,11 +166,13 @@ def get_route(start_coords, end_coords, label):
     data = response.json()
     if "routes" in data and data["routes"]:
         route = data["routes"][0]
+        encoded_poly = route["geometry"]
+        coords_list = polyline.decode(encoded_poly)
         return {
             "label": label,
             "distance": route["distance"] / 1000,  # En km
             "duration": route["duration"] / 60,   # En minutes
-            "geometry": route["geometry"]
+            "geometry": coords_list
         }
     return None
 

@@ -13,6 +13,19 @@ app.config['SECRET_KEY'] = 'your_secret_key'
 db = SQLAlchemy(app)
 ###########################################################################################################################################DATABASE############################################################################################################
 # Modèle pour les utilisateurs
+
+class AddressCache(db.Model):
+    __tablename__ = "address_cache"
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    address = db.Column(db.String(255), unique=True, nullable=False)
+    lat = db.Column(db.Float, nullable=False)
+    lon = db.Column(db.Float, nullable=False)
+
+    def __repr__(self):
+        return f"<AddressCache {self.address} lat={self.lat} lon={self.lon}>"
+    
+    
 class User(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     email = db.Column(db.String(100),unique=True, nullable=False)
