@@ -43,15 +43,11 @@ const InterfaceConducteur = () => {
 
         // Récupération des données utilisateur
         if (userId) {
-            fetch(`http://localhost:3000/user/${userId}`)
+            fetch(`http://localhost:5000/user/${userId}`)
             .then(response => response.json())
             .then(data => {
                 setUserData(data);
-                if (data.lat && data.lon) {
-                    L.marker([data.lat, data.lon])
-                        .addTo(newMap)
-                        .bindPopup("Votre adresse");
-                }
+
             })
                 .catch(error => console.error("Erreur lors de la récupération des données utilisateur:", error));
         }
@@ -131,6 +127,7 @@ const InterfaceConducteur = () => {
 
     const fetchPassagers = async () => {
         if (!userId) return;
+        if (!userId || !map) return;
         try {
             const response = await fetch(`http://localhost:5000/find_passengers`, {
                 method: "POST",
@@ -147,12 +144,22 @@ const InterfaceConducteur = () => {
             }
 
             setPassagers(data.possible_passengers);
+            if (!map || !layerGroup) return;
 
-            // 🔹 Affichage du conducteur et de la destination en permanence
-            const firstPassenger = data.possible_passengers[0]; // Utiliser le premier passager comme référence
+            const firstPassenger = data.possible_passengers[0];
+            if (!firstPassenger || !firstPassenger.routes || !firstPassenger.routes.driver_to_passenger) {
+                console.error("firstPassenger ou driver_to_passenger est undefined !");
+                return;
+            } // Utiliser le premier passager comme référence
             if (firstPassenger) {
                 const driverCoords = firstPassenger.routes.driver_to_passenger.geometry[0]; // Premier point = conducteur
                 const destinationCoords = firstPassenger.routes.passenger_to_destination.geometry[1]; // Dernier point = destination
+
+                if (!driverCoords || !destinationCoords) {
+                    console.error("driverCoords ou destinationCoords est undefined !");
+                    return;
+                }
+
 
                 // Afficher le marqueur du conducteur
                 if (!conducteurMarker) {
@@ -174,6 +181,7 @@ const InterfaceConducteur = () => {
             console.error("Erreur lors de la récupération des passagers:", error);
         }
     };
+
 
 
     const toggleMarker = (passager) => {
@@ -213,6 +221,47 @@ const InterfaceConducteur = () => {
             return newMarkers; // Met à jour l'état des marqueurs
         });
     };
+
+    const handleSendOffers = async () => {
+        if (!userId) {
+            console.error("Utilisateur non identifié.");
+            return;
+        }
+
+        const selectedPassengers = Object.keys(markers);
+        if (selectedPassengers.length === 0) {
+            alert("Aucun passager sélectionné !");
+            return;
+        }
+
+        try {
+            for (const passengerId of selectedPassengers) {
+                const passenger = passagers.find(p => p.passenger_id === passengerId);
+                if (!passenger) continue;
+
+                const response = await fetch("http://localhost:5000/offerPassenger", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        driver_id: userId,
+                        ride_request_id: passenger.ride_request_id
+                    }),
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    console.error(`Erreur pour le passager ${passengerId}:`, data.error);
+                }
+                else {
+                    console.log(`Offre envoyée au passager ${passengerId}.`);
+                }
+            }
+            alert("Offres envoyées avec succès !");
+        } catch (error) {
+            console.error("Erreur lors de l'envoi des offres :", error);
+        }
+    };
+
 
 
     return (
@@ -254,6 +303,13 @@ const InterfaceConducteur = () => {
                     </div>
                 </div>
             </div>
+            <button
+                onClick={handleSendOffers}
+                style={{ marginTop: "20px", padding: "10px", backgroundColor: "blue", color: "white", border: "none", cursor: "pointer" }}
+            >
+                Envoyer les offres aux passagers sélectionnés
+            </button>
+
         </div>
     );
 
