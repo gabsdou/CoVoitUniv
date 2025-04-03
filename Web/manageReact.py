@@ -570,7 +570,7 @@ def offer_passenger():
         send_offer_email(
             driver=driver,
             passenger=passenger,
-            deparure_hour=deparure_hour
+            deparure_hour=deparure_hour,
             sender_email=SENDER_EMAIL,
             sender_password=SENDER_PASSWORD
         )
