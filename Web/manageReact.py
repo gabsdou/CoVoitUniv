@@ -7,6 +7,7 @@ from pingMail import send_offer_email,SENDER_EMAIL,SENDER_PASSWORD
 import requests
 import uuid
 import json
+import copy
 
 app = Flask(__name__)
 CORS(app)
@@ -133,6 +134,89 @@ def save_calendar():
     db.session.commit()
 
     return jsonify({'message': 'Calendar updated successfully'}), 200
+
+@app.route('/propagateCalendar', methods=['POST'])
+def deploy_week():
+    """
+    Duplique la semaine `week_number` de l'utilisateur sur toute l'année
+    (par exemple pour les semaines 1 à 52).
+    Le front envoie un JSON :
+    {
+      "user_id": "<UUID>",
+      "week_number": 6
+    }
+    """
+    data = request.get_json()
+    user_id = data.get("user_id")
+    ref_week_number = data.get("week_number")
+
+    if not user_id or ref_week_number is None:
+        return jsonify({"error": "Missing user_id or week_number"}), 400
+
+    # 1) Récupération de l'utilisateur
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    # Charger le calendrier existant
+    if user.calendar:
+        calendar_data = json.loads(user.calendar)
+    else:
+        # Si pas de calendrier, on initialise à une liste vide de semaines
+        calendar_data = []
+
+    # Vérifier que c'est bien une liste de semaines
+    if not isinstance(calendar_data, list):
+        return jsonify({"error": "Calendar data is not a list of weeks"}), 400
+
+    # 2) Chercher la semaine de référence
+    ref_week_data = None
+    for week_entry in calendar_data:
+        if isinstance(week_entry, dict) and week_entry.get("weekNumber") == ref_week_number:
+            ref_week_data = week_entry
+            break
+
+    if not ref_week_data:
+        return jsonify({"error": f"No data found for weekNumber {ref_week_number}"}), 400
+
+    # 3) Construire la liste complète de semaines 1 à 52 (ou 53, selon vos besoins)
+    #    en copiant la structure de la semaine de référence.
+    new_calendar_data = []
+    for w_num in range(1, 52):
+        # On peut vouloir ignorer la semaine déjà existante (si on veut la redéfinir),
+        # ou juste la réécrire. Ici, on recrée à chaque fois l'entrée.
+        week_copy = copy.deepcopy(ref_week_data)  # pour ne pas muter l'objet d'origine
+        week_copy["weekNumber"] = w_num
+        new_calendar_data.append(week_copy)
+
+    # 4) Si vous souhaitez préserver d'autres semaines déjà existantes
+    #    qui ne sont pas dans 1..52, vous pouvez fusionner "new_calendar_data"
+    #    avec l'ancien "calendar_data". Ici, on écrase tout pour la démonstration.
+    #
+    #    Exemple: si vous voulez juste remplacer les semaines 1..52, puis garder
+    #    tout ce qui est hors de 1..52, on pourrait faire :
+    #
+    #    preserved_weeks = []
+    #    for w in calendar_data:
+    #        wn = w.get("weekNumber")
+    #        if wn is not None and (wn < 1 or wn > 52):
+    #            preserved_weeks.append(w)
+    #    # On concatène
+    #    new_calendar_data += preserved_weeks
+
+    # 5) Remplacer les placeholders si besoin, ex: "maison" -> user.address
+    #    selon votre fonction existante
+    updated_calendar = replace_placeholders(new_calendar_data, user.address)
+
+    # 6) Stocker le résultat dans la DB
+    user.calendar = json.dumps(updated_calendar)
+    db.session.commit()
+
+    return jsonify({
+        "message": f"Week {ref_week_number} deployed to all weeks (1..52)",
+        "new_calendar_size": len(updated_calendar)
+    }), 200
+
 
 #permet de recuperer le calendrier pour son User
 @app.route('/getCal/<string:user_id>', methods=['GET'])
