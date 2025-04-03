@@ -89,7 +89,9 @@ function Timeline() {
         <div className="timeline-container">
             <h1>Vos trajets de la semaine</h1>
             <ul className="timeline-list">
-                {weekData.days.map((day, index) => (
+            {weekData.days
+                .filter((day) => !day.disabled) // ✅ on enlève les jours désactivés
+                .map((day, index) => (
                     <li key={index}>
                         <strong>
                             {new Date(day.date).toLocaleDateString("fr-FR", {

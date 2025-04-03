@@ -285,10 +285,10 @@ const InterfaceConducteur = () => {
                 <div id="options-passagers" style={{ width: "30%", display: "flex", flexDirection: "column", alignItems: "center" }}>
                     <h2>Passagers Disponibles</h2>
                     <button onClick={fetchPassagers}>Charger les passagers</button>
-                    <div id="passagers-list" style={{ marginTop: "10px", width: "100%", textAlign: "center" }}>
+                    <div id="passagers-list" style={{ marginTop: "10px", width: "100%", textAlign: "center", color: "white" }}>
                     {passagers.length > 0 ? (
                         passagers.map((passager) => (
-                            <div key={passager.passenger_id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "80%" }}>
+                            <div key={passager.passenger_id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "80%", color: "white" }}>
                                 <p>{passager.first_name} {passager.last_name}</p>
                                 <input
                                     type="checkbox"

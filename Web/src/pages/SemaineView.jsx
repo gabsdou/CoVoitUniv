@@ -6,6 +6,8 @@ import "./SemaineView.css";
 function SemaineView({ week, userId, onBack }) {
   const [showAllerInfo, setShowAllerInfo] = useState({});
   const [showRetourInfo, setShowRetourInfo] = useState({});
+  const [disabledDays, setDisabledDays] = useState({});
+
   const [roles, setRoles] = useState(
     week.days.reduce((acc, day) => {
       const dayOfWeek = new Date(day).getDay();
@@ -37,6 +39,13 @@ function SemaineView({ week, userId, onBack }) {
               destinationRetour: normaliserAdresse(day.destinationRetour),
             }))
           );
+          setDisabledDays(
+            data.calendar.days.reduce((acc, day) => {
+              acc[day.date] = !!day.disabled;
+              return acc;
+            }, {})
+          );
+
           setRoles(
             data.calendar.days.reduce((acc, day) => {
               acc[day.date] = {
@@ -56,6 +65,14 @@ function SemaineView({ week, userId, onBack }) {
     };
     fetchWeekSchedule();
   }, [week.weekNumber, userId]);
+  const handleToggleDisabledDay = (date) => {
+    setDisabledDays((prev) => ({
+      ...prev,
+      [date]: !prev[date], // Inverse l'état "désactivé" de ce jour
+    }));
+
+  };
+
 
   const normaliserAdresse = (adresse) => {
     if (!adresse) return "Maison";
@@ -105,6 +122,7 @@ function SemaineView({ week, userId, onBack }) {
               departRetour: day.departRetour,
               destinationRetour: day.destinationRetour,
               roleRetour: roles[day.date]?.retour || "passager",
+              disabled: !!disabledDays[day.date],
             })),
           },
         }),
@@ -234,9 +252,40 @@ function SemaineView({ week, userId, onBack }) {
           });
 
           return (
-            <div key={date.toString()} className="day-column">
+            <div
+              key={date.toString()}
+              className={`day-column ${disabledDays[date] ? "disabled-day" : ""}`}
+              style={{ position: "relative" }}
+            >
               <h3>{dayLabel}</h3>
+              <button
+                onClick={() => handleToggleDisabledDay(date)}
+                style={{
+                  position: "absolute",
+                  top: "5px",
+                  right: "5px",
+                  backgroundColor: "red",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "22px",
+                  height: "22px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  lineHeight: "20px",
+                  textAlign: "center",
+                  padding: 0,
+                  zIndex: 1
+                }}
+                title={disabledDays[date] ? "Réactiver" : "Désactiver"}
+              >
+                ×
+              </button>
 
+
+
+              {!disabledDays[date] && (
+              <>
               <div className="day-hours">
                 {Array.from({ length: 24 }, (_, hour) => {
                   const isHighlighted = hour >= startHour && hour < endHour;
@@ -275,7 +324,7 @@ function SemaineView({ week, userId, onBack }) {
                     }))
                   }
                 >
-                  {showAllerInfo[date] ? "Masquer Aller" : "Sélectionner infos Aller"}
+                  {showAllerInfo[date] ? "Masquer Aller" : "infos Aller"}
                 </button>
 
                 {showAllerInfo[date] && (
@@ -343,7 +392,7 @@ function SemaineView({ week, userId, onBack }) {
                     }))
                   }
                 >
-                  {showRetourInfo[date] ? "Masquer Retour" : "Sélectionner infos Retour"}
+                  {showRetourInfo[date] ? "Masquer Retour" : "infos Retour"}
                 </button>
 
                 {showRetourInfo[date] && (
@@ -402,6 +451,8 @@ function SemaineView({ week, userId, onBack }) {
                   </div>
                 )}
               </div>
+              </>
+)}
             </div>
           );
         })}

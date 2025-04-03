@@ -24,6 +24,19 @@
     margin-top: 20px;
   }
 
+  .disabled-day {
+    opacity: 0.5;
+    position: relative;
+  }
+
+  .disabled-day * {
+    pointer-events: none; /* tout est bloqué... */
+  }
+
+  .disabled-day button {
+    pointer-events: auto; /* ... sauf le bouton rouge */
+  }
+
   .day-column {
     background-color: #f9f9f9;
     padding: 10px;
@@ -107,11 +120,11 @@
     margin-bottom: 10px;
     transition: background-color 0.2s ease;
   }
-  
+
   .toggle-button:hover {
     background-color: #5b3fd8;
   }
-  
+
   .aller-info {
     margin-top: 10px;
     padding: 10px;
@@ -119,4 +132,3 @@
     border-radius: 5px;
     background-color: #f9f9f9;
   }
-  
