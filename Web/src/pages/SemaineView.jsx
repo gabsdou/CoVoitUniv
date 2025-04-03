@@ -62,6 +62,10 @@ function SemaineView({ week, userId, onBack }) {
               destinationAller: normaliserAdresse(day.destinationAller),
               departRetour: normaliserAdresse(day.departRetour),
               destinationRetour: normaliserAdresse(day.destinationRetour),
+              validatedAller: false,
+              validatedRetour: false,
+
+
             }))
           );
           setDisabledDays(
@@ -154,8 +158,43 @@ function SemaineView({ week, userId, onBack }) {
         destinationRetour: "Maison",
         roleAller: "passager",
         roleRetour: "passager",
+        disabled: false,
+        validatedAller: false,
+        validatedRetour: false,
       }));
   };
+
+  const handleSaveAndPropagate = async () => {
+    await handleSaveWeek();      // Sauvegarde la semaine actuelle
+    await handlePropagateSchedule(); // Propage la semaine aux autres semaines vides
+  };
+
+  const handlePropagateSchedule = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/propagateCalendar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          source_week: week.weekNumber,
+        }),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        alert("Emploi du temps propagé avec succès !");
+      } else {
+        alert(`Erreur : ${result.error}`);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la propagation :", error);
+      alert("Impossible de propager l'emploi du temps.");
+    }
+  };
+
+
 
   const handleSaveWeek = async () => {
     try {
@@ -179,6 +218,10 @@ function SemaineView({ week, userId, onBack }) {
               destinationRetour: day.destinationRetour,
               roleRetour: roles[day.date]?.retour || "passager",
               disabled: !!disabledDays[day.date],
+              validatedAller: day.validatedAller || false,
+              validatedRetour: day.validatedRetour || false,
+
+
             })),
           },
         }),
@@ -552,6 +595,10 @@ function SemaineView({ week, userId, onBack }) {
       <button onClick={handleSaveWeek} className="btn-save">
         💾 Sauvegarder
       </button>
+      <button onClick={handleSaveAndPropagate} className="btn-save" style={{ marginTop: "10px" }}>
+  🔁    Propager la semaine aux autres vides
+      </button>
+
     </div>
   );
 }
