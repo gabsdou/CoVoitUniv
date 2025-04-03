@@ -1,7 +1,29 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, {useContext, useState, useEffect } from "react";
+import { Link, useNavigate, UNSAFE_NavigationContext  } from "react-router-dom";
 import ToggleSwitch from "./ToggleSwitch";
 import "./SemaineView.css";
+
+function useWarnIfUnsavedChanges(when, message = "Des modifications non sauvegardées seront perdues. Quitter ?") {
+  const navigator = useContext(UNSAFE_NavigationContext).navigator;
+
+  useEffect(() => {
+    if (!when) return;
+
+    const push = navigator.push;
+
+    navigator.push = (...args) => {
+      const shouldProceed = window.confirm(message);
+      if (shouldProceed) {
+        navigator.push = push;
+        navigator.push(...args);
+      }
+    };
+
+    return () => {
+      navigator.push = push;
+    };
+  }, [when, navigator, message]);
+}
 
 function SemaineView({ week, userId, onBack }) {
   const [showAllerInfo, setShowAllerInfo] = useState({});
@@ -287,6 +309,10 @@ function SemaineView({ week, userId, onBack }) {
     };
   }, [daysHours, roles, initialDaysHours, initialRoles]);
 
+  useWarnIfUnsavedChanges(
+    JSON.stringify(daysHours) !== initialDaysHours || JSON.stringify(roles) !== initialRoles
+  );
+  
   return (
     <div className="semaine-container">
       <button onClick={onBack} className="btn-back">
