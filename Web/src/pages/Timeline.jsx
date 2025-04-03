@@ -105,18 +105,30 @@ function Timeline() {
 
                         {/* Ajout des boutons */}
                         <button
-                            onClick={() => handleDayClick(day.roleAller, day.date, "morning")}
-                            className="btn-nav"
+                          onClick={() => handleDayClick(day.roleAller, day.date, "morning")}
+                          className="btn-nav"
+                          style={{
+                            backgroundColor: day.validatedAller ? "green" : undefined,
+                            pointerEvents: day.validatedAller ? "none" : "auto",
+                            opacity: day.validatedAller ? 0.7 : 1
+                          }}
                         >
-                            {day.roleAller === "conducteur" ? "Choisir mes passagers (Aller)" : "Demander un trajet (Aller)"}
+                          {day.roleAller === "conducteur" ? "Choisir mes passagers (Aller)" : "Demander un trajet (Aller)"}
                         </button>
 
+
                         <button
-                            onClick={() => handleDayClick(day.roleRetour, day.date, "evening")}
-                            className="btn-nav"
+                          onClick={() => handleDayClick(day.roleRetour, day.date, "evening")}
+                          className="btn-nav"
+                          style={{
+                            backgroundColor: day.validatedRetour ? "green" : undefined,
+                            pointerEvents: day.validatedRetour ? "none" : "auto",
+                            opacity: day.validatedRetour ? 0.7 : 1
+                          }}
                         >
-                            {day.roleRetour === "conducteur" ? "Choisir mes passagers (Retour)" : "Demander un trajet (Retour)"}
+                          {day.roleRetour === "conducteur" ? "Choisir mes passagers (Retour)" : "Demander un trajet (Retour)"}
                         </button>
+
                     </li>
                 ))}
             </ul>

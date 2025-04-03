@@ -1,7 +1,29 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, {useContext, useState, useEffect } from "react";
+import { Link, useNavigate, UNSAFE_NavigationContext  } from "react-router-dom";
 import ToggleSwitch from "./ToggleSwitch";
 import "./SemaineView.css";
+
+function useWarnIfUnsavedChanges(when, message = "Des modifications non sauvegardées seront perdues. Quitter ?") {
+  const navigator = useContext(UNSAFE_NavigationContext).navigator;
+
+  useEffect(() => {
+    if (!when) return;
+
+    const push = navigator.push;
+
+    navigator.push = (...args) => {
+      const shouldProceed = window.confirm(message);
+      if (shouldProceed) {
+        navigator.push = push;
+        navigator.push(...args);
+      }
+    };
+
+    return () => {
+      navigator.push = push;
+    };
+  }, [when, navigator, message]);
+}
 
 function SemaineView({ week, userId, onBack }) {
   const [showAllerInfo, setShowAllerInfo] = useState({});
@@ -18,6 +40,9 @@ function SemaineView({ week, userId, onBack }) {
     }, {})
   );
   const [daysHours, setDaysHours] = useState([]);
+  const [initialDaysHours, setInitialDaysHours] = useState([]);
+  const [initialRoles, setInitialRoles] = useState({});
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,6 +62,10 @@ function SemaineView({ week, userId, onBack }) {
               destinationAller: normaliserAdresse(day.destinationAller),
               departRetour: normaliserAdresse(day.departRetour),
               destinationRetour: normaliserAdresse(day.destinationRetour),
+              validatedAller: false,
+              validatedRetour: false,
+
+
             }))
           );
           setDisabledDays(
@@ -55,11 +84,39 @@ function SemaineView({ week, userId, onBack }) {
               return acc;
             }, {})
           );
+          setInitialDaysHours(JSON.stringify(data.calendar.days));
+          setInitialRoles(
+            JSON.stringify(
+              data.calendar.days.reduce((acc, day) => {
+                acc[day.date] = {
+                  aller: day.roleAller || "passager",
+                  retour: day.roleRetour || "passager",
+                };
+                return acc;
+              }, {})
+            )
+          );
         } else {
           setDaysHours(getDefaultWeekSchedule());
+          const defaults = getDefaultWeekSchedule();
+          setInitialDaysHours(JSON.stringify(defaults));
+          setInitialRoles(
+            JSON.stringify(
+              defaults.reduce((acc, day) => {
+                acc[day.date] = {
+                  aller: day.roleAller,
+                  retour: day.roleRetour,
+                };
+                return acc;
+              }, {})
+            )
+          );
         }
       } catch (error) {
-        console.error("Erreur lors de la récupération des données de la semaine :", error);
+        console.error(
+          "Erreur lors de la récupération des données de la semaine :",
+          error
+        );
         setDaysHours(getDefaultWeekSchedule());
       }
     };
@@ -76,9 +133,12 @@ function SemaineView({ week, userId, onBack }) {
 
   const normaliserAdresse = (adresse) => {
     if (!adresse) return "Maison";
-    if (adresse.includes("74 Rue Marcel Cachin, 93000 Bobigny")) return "Bobigny";
-    if (adresse.includes("99 Av. Jean Baptiste Clément, 93430 Villetaneuse")) return "Villetaneuse";
-    if (adresse.includes("Place du 8 Mai 1945, 93200, Saint-Denis")) return "Saint-Denis";
+    if (adresse.includes("74 Rue Marcel Cachin, 93000 Bobigny"))
+      return "Bobigny";
+    if (adresse.includes("99 Av. Jean Baptiste Clément, 93430 Villetaneuse"))
+      return "Villetaneuse";
+    if (adresse.includes("Place du 8 Mai 1945, 93200, Saint-Denis"))
+      return "Saint-Denis";
     return "Maison";
   };
 
@@ -98,8 +158,43 @@ function SemaineView({ week, userId, onBack }) {
         destinationRetour: "Maison",
         roleAller: "passager",
         roleRetour: "passager",
+        disabled: false,
+        validatedAller: false,
+        validatedRetour: false,
       }));
   };
+
+  const handleSaveAndPropagate = async () => {
+    await handleSaveWeek();      // Sauvegarde la semaine actuelle
+    await handlePropagateSchedule(); // Propage la semaine aux autres semaines vides
+  };
+
+  const handlePropagateSchedule = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/propagateCalendar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          source_week: week.weekNumber,
+        }),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        alert("Emploi du temps propagé avec succès !");
+      } else {
+        alert(`Erreur : ${result.error}`);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la propagation :", error);
+      alert("Impossible de propager l'emploi du temps.");
+    }
+  };
+
+
 
   const handleSaveWeek = async () => {
     try {
@@ -123,6 +218,10 @@ function SemaineView({ week, userId, onBack }) {
               destinationRetour: day.destinationRetour,
               roleRetour: roles[day.date]?.retour || "passager",
               disabled: !!disabledDays[day.date],
+              validatedAller: day.validatedAller || false,
+              validatedRetour: day.validatedRetour || false,
+
+
             })),
           },
         }),
@@ -234,7 +333,29 @@ function SemaineView({ week, userId, onBack }) {
       }
     }
   };
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      const hasChanges =
+        JSON.stringify(daysHours) !== initialDaysHours ||
+        JSON.stringify(roles) !== initialRoles;
 
+      if (hasChanges) {
+        e.preventDefault();
+        e.returnValue = ""; // Nécessaire pour certains navigateurs
+        return "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [daysHours, roles, initialDaysHours, initialRoles]);
+
+  useWarnIfUnsavedChanges(
+    JSON.stringify(daysHours) !== initialDaysHours || JSON.stringify(roles) !== initialRoles
+  );
+  
   return (
     <div className="semaine-container">
       <button onClick={onBack} className="btn-back">
@@ -324,7 +445,9 @@ function SemaineView({ week, userId, onBack }) {
                     }))
                   }
                 >
-                  {showAllerInfo[date] ? "Masquer Aller" : "infos Aller"}
+                  {showAllerInfo[date]
+                    ? "Masquer Aller"
+                    : "Sélectionner infos Aller"}
                 </button>
 
                 {showAllerInfo[date] && (
@@ -334,7 +457,9 @@ function SemaineView({ week, userId, onBack }) {
                     <select
                       id="depart-select"
                       value={dayObj.departAller}
-                      onChange={(e) => handleDepartAllerChange(dayIndex, e.target.value)}
+                      onChange={(e) =>
+                        handleDepartAllerChange(dayIndex, e.target.value)
+                      }
                     >
                       <option value="Maison">Maison</option>
                       <option value="Villetaneuse">Villetaneuse</option>
@@ -348,7 +473,9 @@ function SemaineView({ week, userId, onBack }) {
                     <select
                       id="retour-select"
                       value={dayObj.destinationAller}
-                      onChange={(e) => handleDestinationAllerChange(dayIndex, e.target.value)}
+                      onChange={(e) =>
+                        handleDestinationAllerChange(dayIndex, e.target.value)
+                      }
                     >
                       <option value="Villetaneuse">Villetaneuse</option>
                       <option value="Maison">Maison</option>
@@ -392,7 +519,9 @@ function SemaineView({ week, userId, onBack }) {
                     }))
                   }
                 >
-                  {showRetourInfo[date] ? "Masquer Retour" : "infos Retour"}
+                  {showRetourInfo[date]
+                    ? "Masquer Retour"
+                    : "Sélectionner infos Retour"}
                 </button>
 
                 {showRetourInfo[date] && (
@@ -402,7 +531,9 @@ function SemaineView({ week, userId, onBack }) {
                     <select
                       id="depart-select-retour"
                       value={dayObj.departRetour}
-                      onChange={(e) => handleDepartRetourChange(dayIndex, e.target.value)}
+                      onChange={(e) =>
+                        handleDepartRetourChange(dayIndex, e.target.value)
+                      }
                     >
                       <option value="Maison">Maison</option>
                       <option value="Villetaneuse">Villetaneuse</option>
@@ -411,12 +542,16 @@ function SemaineView({ week, userId, onBack }) {
                     </select>
                     <br />
 
-                    <label htmlFor="retour-select-retour">Destination Retour</label>
+                    <label htmlFor="retour-select-retour">
+                      Destination Retour
+                    </label>
                     <br />
                     <select
                       id="retour-select-retour"
                       value={dayObj.destinationRetour}
-                      onChange={(e) => handleDestinationRetourChange(dayIndex, e.target.value)}
+                      onChange={(e) =>
+                        handleDestinationRetourChange(dayIndex, e.target.value)
+                      }
                     >
                       <option value="Villetaneuse">Villetaneuse</option>
                       <option value="Maison">Maison</option>
@@ -460,6 +595,10 @@ function SemaineView({ week, userId, onBack }) {
       <button onClick={handleSaveWeek} className="btn-save">
         💾 Sauvegarder
       </button>
+      <button onClick={handleSaveAndPropagate} className="btn-save" style={{ marginTop: "10px" }}>
+  🔁    Propager la semaine aux autres vides
+      </button>
+
     </div>
   );
 }

@@ -148,7 +148,7 @@ def deploy_week():
     """
     data = request.get_json()
     user_id = data.get("user_id")
-    ref_week_number = data.get("week_number")
+    ref_week_number = data.get("source_week")
 
     if not user_id or ref_week_number is None:
         return jsonify({"error": "Missing user_id or week_number"}), 400
