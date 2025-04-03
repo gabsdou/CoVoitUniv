@@ -444,12 +444,13 @@ def offer_passenger():
     {
       "driver_id": "<driver UUID>",
       "ride_request_id": "<RideRequest ID>"
+      "departure_hour": 9,
     }
     """
     data = request.get_json()
     driver_id = data.get("driver_id")
     ride_request_id = data.get("ride_request_id")
-
+    deparure_hour = data.get("departure_hour")
     if not driver_id or not ride_request_id:
         return jsonify({"error": "Missing driver_id or ride_request_id"}), 400
 
@@ -464,11 +465,13 @@ def offer_passenger():
     # Optionally check if the passenger (ride_request.user_id) is the same as the driver's ID to avoid self-offer
     if ride_request.user_id == driver_id:
         return jsonify({"error": "Cannot offer a ride to oneself"}), 400
-
+    # Check if the ride request is already matched with a driver
+  
     # Create a new DriverOffer record
     new_offer = DriverOffer(
         driver_id=driver_id,
         ride_request_id=ride_request_id,
+        departure_hour=deparure_hour,
         status="offered"
     )
 
@@ -483,6 +486,7 @@ def offer_passenger():
         send_offer_email(
             driver=driver,
             passenger=passenger,
+            deparure_hour=deparure_hour
             sender_email=SENDER_EMAIL,
             sender_password=SENDER_PASSWORD
         )

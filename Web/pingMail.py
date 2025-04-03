@@ -30,7 +30,7 @@ def send_email_via_gmail(sender_email, sender_password, to_email, subject, body)
         print(f"Failed to send email to {to_email}. Error: {e}")
 
 
-def send_offer_email(driver, passenger, sender_email, sender_password):
+def send_offer_email(driver, passenger,departure_hour, sender_email, sender_password):
     """
     Composes and sends an email to the passenger when a driver offers them a ride.
     """

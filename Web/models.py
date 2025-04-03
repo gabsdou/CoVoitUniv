@@ -52,7 +52,8 @@ class DriverOffer(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     driver_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     ride_request_id = db.Column(db.String(36), db.ForeignKey('ride_request.id'), nullable=False)
-    status = db.Column(db.String(20), default="offered")  
+    status = db.Column(db.String(20), default="offered")
+    departure_hour = db.Column(db.Integer, nullable=False)    # e.g. 9  
     # e.g. "offered", "accepted", "declined"
     # Up to you how you handle states.
 
