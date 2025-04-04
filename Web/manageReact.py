@@ -336,8 +336,15 @@ def request_ride():
         end_hour=end_hour
     )
     db.session.add(ride_request)
+    if time_slot == "morning":
+        day_info["validatedAller"] = True
+    else:
+        day_info["validatedRetour"] = True
+    # Save the updated calendar back to the user
+    user.calendar = json.dumps(calendar_data)
+    
     db.session.commit()
-
+   
     return jsonify({
         "message": "Ride request created from calendar data",
         "ride_request_id": ride_request.id,
