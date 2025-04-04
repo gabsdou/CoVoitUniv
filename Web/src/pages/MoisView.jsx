@@ -20,7 +20,7 @@ function MoisView({ year, monthData,userId, onBack }) {
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('fr-FR', { month: 'long', day: 'numeric' });
   }
-  
+
   const today = new Date().toISOString().split("T")[0];
   return (
     <div>
@@ -35,7 +35,7 @@ function MoisView({ year, monthData,userId, onBack }) {
           >
             Semaine du {formatDate(week.days[0])} au {formatDate(week.days[6])}
           </button>
-          
+
           ))}
         </div>
 

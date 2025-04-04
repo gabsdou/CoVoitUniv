@@ -45,6 +45,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    font-size: 20px;
   }
 
   .day-column h3 {
@@ -67,7 +68,7 @@
     margin: 1px 0;
     background-color: #eee;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 16px;
     user-select: none; /* évite la sélection de texte */
     cursor: default;
   }

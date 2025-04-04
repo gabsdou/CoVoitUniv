@@ -12,12 +12,18 @@ function useWarnIfUnsavedChanges(when, message = "Des modifications non sauvegar
     const push = navigator.push;
 
     navigator.push = (...args) => {
+      if (!when) {
+        push(...args);
+        return;
+      }
+
       const shouldProceed = window.confirm(message);
       if (shouldProceed) {
         navigator.push = push;
-        navigator.push(...args);
+        push(...args);
       }
     };
+
 
     return () => {
       navigator.push = push;
@@ -41,7 +47,8 @@ function SemaineView({ week, userId, onBack }) {
   );
   const [daysHours, setDaysHours] = useState([]);
   const [initialDaysHours, setInitialDaysHours] = useState([]);
-  const [initialRoles, setInitialRoles] = useState({});
+
+
 
   const navigate = useNavigate();
 
@@ -52,6 +59,8 @@ function SemaineView({ week, userId, onBack }) {
           `http://localhost:5000/getCal/${userId}?indexWeek=${week.weekNumber}`
         );
         const data = await response.json();
+
+
         if (data.calendar && data.calendar.days.length > 0) {
           setDaysHours(
             data.calendar.days.map((day) => ({
@@ -74,6 +83,7 @@ function SemaineView({ week, userId, onBack }) {
               return acc;
             }, {})
           );
+
 
           setRoles(
             data.calendar.days.reduce((acc, day) => {
@@ -111,6 +121,7 @@ function SemaineView({ week, userId, onBack }) {
               }, {})
             )
           );
+
         }
       } catch (error) {
         console.error(
@@ -119,8 +130,11 @@ function SemaineView({ week, userId, onBack }) {
         );
         setDaysHours(getDefaultWeekSchedule());
       }
+      setInitialDaysHours(JSON.stringify(daysHours));
+        setInitialRoles(JSON.stringify(roles));
     };
     fetchWeekSchedule();
+
   }, [week.weekNumber, userId]);
   const handleToggleDisabledDay = (date) => {
     setDisabledDays((prev) => ({
@@ -129,6 +143,8 @@ function SemaineView({ week, userId, onBack }) {
     }));
 
   };
+  const [initialRoles, setInitialRoles] = useState({});
+
 
 
   const normaliserAdresse = (adresse) => {
@@ -217,7 +233,6 @@ function SemaineView({ week, userId, onBack }) {
               departRetour: day.departRetour,
               destinationRetour: day.destinationRetour,
               roleRetour: roles[day.date]?.retour || "passager",
-              disabled: !!disabledDays[day.date],
               validatedAller: day.validatedAller || false,
               validatedRetour: day.validatedRetour || false,
 
@@ -230,6 +245,8 @@ function SemaineView({ week, userId, onBack }) {
       const result = await response.json();
       if (response.ok) {
         alert("Modifications enregistrées avec succès !");
+        setInitialDaysHours(JSON.stringify(daysHours));
+        setInitialRoles(JSON.stringify(roles));
       } else {
         alert(`Erreur : ${result.error}`);
       }
@@ -346,6 +363,9 @@ function SemaineView({ week, userId, onBack }) {
       }
     };
 
+
+
+
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
@@ -355,13 +375,28 @@ function SemaineView({ week, userId, onBack }) {
   useWarnIfUnsavedChanges(
     JSON.stringify(daysHours) !== initialDaysHours || JSON.stringify(roles) !== initialRoles
   );
-  
+
   return (
     <div className="semaine-container">
       <button onClick={onBack} className="btn-back">
         ← Retour au mois
       </button>
       <h2>Semaine {week.weekNumber}</h2>
+      <div style={{ marginTop: "20px", display: "flex", justifyContent: "center", gap: "10px" }}>
+  <button
+    className="btn-save"
+    onClick={() => window.location.href = `/Calendrier?week=${week.weekNumber - 1}`}
+  >
+    ← Semaine précédente
+  </button>
+  <button
+    className="btn-save"
+    onClick={() => window.location.href = `/Calendrier?week=${week.weekNumber + 1}`}
+  >
+    Semaine suivante →
+  </button>
+</div>
+
 
       <div className="days-columns">
         {daysHours.map((dayObj, dayIndex) => {
@@ -408,7 +443,8 @@ function SemaineView({ week, userId, onBack }) {
               {!disabledDays[date] && (
               <>
               <div className="day-hours">
-                {Array.from({ length: 24 }, (_, hour) => {
+                {Array.from({ length: 17 }, (_, i) => {
+                  const hour = i + 6; // Heures de 8h à 23h
                   const isHighlighted = hour >= startHour && hour < endHour;
                   const isTopHandle = hour === startHour;
                   const isBottomHandle = hour === endHour - 1;
