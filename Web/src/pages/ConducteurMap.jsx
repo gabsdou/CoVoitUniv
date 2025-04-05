@@ -176,35 +176,37 @@ const InterfaceConducteur = () => {
 
   const fetchPassagers = async () => {
     if (!userId || !map) return;
-  
+
     setIsLoading(true); // Début
-  
+
     try {
       const response = await fetch(`http://localhost:5000/find_passengers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: userId, timeslot: mornEve, day: date }),
       });
-  
+
       const data = await response.json();
       console.log("Passagers récupérés :", data);
-  
+
       if (!data.possible_passengers || data.possible_passengers.length === 0) {
         console.log("Aucun passager trouvé.");
-        return; // ❗ Ne pas set false ici, laisse le finally gérer
+        return;
       }
-  
+
       setPassagers(data.possible_passengers);
-  
+
       const firstPassenger = data.possible_passengers[0];
       if (!firstPassenger?.routes?.driver_to_passenger) {
         console.error("firstPassenger ou ses routes sont invalides.");
         return;
       }
-  
-      const driverCoords = firstPassenger.routes.driver_to_passenger.geometry[0];
-      const destinationCoords = firstPassenger.routes.passenger_to_destination.geometry[1];
-  
+
+      const driverCoords =
+        firstPassenger.routes.driver_to_passenger.geometry[0];
+      const destinationCoords =
+        firstPassenger.routes.passenger_to_destination.geometry[1];
+
       if (driverCoords && !conducteurMarker) {
         const driverMarker = L.marker([driverCoords[0], driverCoords[1]], {
           icon: startMarkerIcon,
@@ -213,11 +215,14 @@ const InterfaceConducteur = () => {
           .bindPopup("Conducteur");
         setConducteurMarker(driverMarker);
       }
-  
+
       if (destinationCoords && !destinationMarker) {
-        const destMarker = L.marker([destinationCoords[0], destinationCoords[1]], {
-          icon: endMarkerIcon,
-        })
+        const destMarker = L.marker(
+          [destinationCoords[0], destinationCoords[1]],
+          {
+            icon: endMarkerIcon,
+          }
+        )
           .addTo(map)
           .bindPopup("Destination Finale");
         setDestinationMarker(destMarker);
@@ -228,7 +233,6 @@ const InterfaceConducteur = () => {
       setIsLoading(false); // ✅ FIN NORMALE OU AVEC ERREUR
     }
   };
-  
 
   const toggleMarker = (passager) => {
     if (!layerGroup || !map) return;
@@ -366,6 +370,27 @@ const InterfaceConducteur = () => {
           }}
         >
           <h2>Passagers Disponibles</h2>
+          {date && (
+            <p
+              style={{
+                marginBottom: "10px",
+                padding: "10px",
+                borderRadius: "5px",
+                fontWeight: "bold",
+                color: "white",
+                backgroundColor: "#927e6e",
+              }}
+            >
+              Pour le{" "}
+              {new Date(date).toLocaleDateString("fr-FR", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+          )}
+
           <button onClick={fetchPassagers}>Charger les passagers</button>
           <div
             id="passagers-list"
@@ -378,7 +403,6 @@ const InterfaceConducteur = () => {
           >
             {isLoading ? (
               <div className="loader"> </div>
-              
             ) : passagers.length > 0 ? (
               passagers.map((passager) => (
                 <div
