@@ -144,6 +144,16 @@ function SemaineView({ week, userId, onBack }) {
     }));
 
   };
+  const handleToggleWeekDisabled = () => {
+    const allDisabled = daysHours.every(day => disabledDays[day.date]);
+    const updated = {};
+    daysHours.forEach(day => {
+      updated[day.date] = !allDisabled;
+    });
+    setDisabledDays(updated);
+  };
+
+
   const [initialRoles, setInitialRoles] = useState({});
 
 
@@ -236,6 +246,7 @@ function SemaineView({ week, userId, onBack }) {
               roleRetour: roles[day.date]?.retour || "passager",
               validatedAller: day.validatedAller || false,
               validatedRetour: day.validatedRetour || false,
+              disabled: disabledDays[day.date] || false,
 
 
             })),
@@ -321,36 +332,6 @@ function SemaineView({ week, userId, onBack }) {
     });
   };
 
-  const handleNavigate = async (passCond, date, mornEve) => {
-    if (passCond === "conducteur") {
-      navigate("/InterfaceConducteur", {
-        state: { userId, passCond, mornEve, date },
-      });
-    } else {
-      try {
-        const response = await fetch(`http://localhost:5000/request_ride`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            user_id: userId,
-            timeSlot: mornEve,
-            day: date,
-          }),
-        });
-        const data = await response.json();
-        if (response.ok) {
-          alert("Demande de trajet envoyée !");
-        } else {
-          alert(`Erreur : ${data.error}`);
-        }
-      } catch (error) {
-        console.error("Erreur lors de l'envoi des données :", error);
-        alert("Impossible de sauvegarder les modifications.");
-      }
-    }
-  };
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       const hasChanges =
@@ -399,12 +380,15 @@ function SemaineView({ week, userId, onBack }) {
 </div>
 
 
+
+
       <div className="days-columns">
         {daysHours.map((dayObj, dayIndex) => {
           const { date, startHour, endHour } = dayObj;
           const dayLabel = dayjs(date).format("dddd D MMMM");
 
           return (
+
             <div
               key={date.toString()}
               className={`day-column ${disabledDays[date] ? "disabled-day" : ""}`}
@@ -625,6 +609,13 @@ function SemaineView({ week, userId, onBack }) {
           );
         })}
       </div>
+      <button
+        className="btn-save"
+        onClick={handleToggleWeekDisabled}
+        style={{ marginBottom: "20px" }}
+      >
+        🔁 Activer / Désactiver toute la semaine
+      </button>
       <button onClick={handleSaveWeek} className="btn-save">
         💾 Sauvegarder
       </button>
