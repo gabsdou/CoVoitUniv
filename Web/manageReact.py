@@ -114,20 +114,6 @@ def passengers(id):
 
 @app.route('/saveCal', methods=['POST'])
 def save_calendar_iso():
-    """
-    Le front envoie toujours un JSON :
-    {
-      "user_id": "...",
-      "calendar_changes": {
-        "weekNumber": 14,
-        "days": [
-          { "date": "2025-03-30T22:00:00.000Z", "startHour": 9, ... },
-          ...
-        ]
-      }
-    }
-    On insère dans CalendarEntry pour chaque 'day'.
-    """
     data = request.get_json()
     user_id = data.get("user_id")
     calendar_changes = data.get("calendar_changes")
@@ -140,49 +126,60 @@ def save_calendar_iso():
         return jsonify({"error": "User not found"}), 404
 
     days = calendar_changes.get("days", [])
-
-    # On peut éventuellement supprimer d'anciennes entrées de la même semaine
-    # si on veut "remplacer" complètement. A vous de décider.
-    # ex: old_week = calendar_changes["weekNumber"]
-    # CalendarEntry.query.filter_by(user_id=user_id, week_number=old_week).delete()
-
     for day_obj in days:
         date_str = day_obj.get("date")
         if not date_str:
             continue
 
         iso_year, iso_week, iso_day = convert_iso_string_to_calendar_slots(date_str)
+        print(f"Processing date: {date_str} -> Year: {iso_year}, Week: {iso_week}, Day: {iso_day}", flush=True)
 
-        # placeholders "Maison" => user.address, par ex.
-        if day_obj.get("departAller") == "Maison":
-            day_obj["departAller"] = user.address
-        if day_obj.get("destinationAller") == "Maison":
-            day_obj["destinationAller"] = user.address
-        if day_obj.get("departRetour") == "Maison":
-            day_obj["departRetour"] = user.address
-        if day_obj.get("destinationRetour") == "Maison":
-            day_obj["destinationRetour"] = user.address
-
-        new_entry = CalendarEntry(
+        # placeholders ...
+        
+        # -- RECHERCHE D'UNE ENTREE EXISTANTE --
+        existing_entry = CalendarEntry.query.filter_by(
             user_id=user_id,
             year=iso_year,
             week_number=iso_week,
-            day_of_week=iso_day,
-            start_hour=day_obj.get("startHour"),
-            end_hour=day_obj.get("endHour"),
-            depart_aller=day_obj.get("departAller"),
-            destination_aller=day_obj.get("destinationAller"),
-            depart_retour=day_obj.get("departRetour"),
-            destination_retour=day_obj.get("destinationRetour"),
-            role_aller=day_obj.get("roleAller"),
-            role_retour=day_obj.get("roleRetour"),
-            validated_aller=day_obj.get("validatedAller", False),
-            validated_retour=day_obj.get("validatedRetour", False)
-        )
-        db.session.add(new_entry)
+            day_of_week=iso_day
+        ).first()
+        
+        if existing_entry:
+            # MISE A JOUR
+            existing_entry.start_hour = day_obj.get("startHour")
+            existing_entry.end_hour = day_obj.get("endHour")
+            existing_entry.depart_aller = day_obj.get("departAller")
+            existing_entry.destination_aller = day_obj.get("destinationAller")
+            existing_entry.depart_retour = day_obj.get("departRetour")
+            existing_entry.destination_retour = day_obj.get("destinationRetour")
+            existing_entry.role_aller = day_obj.get("roleAller")
+            existing_entry.role_retour = day_obj.get("roleRetour")
+            existing_entry.validated_aller = day_obj.get("validatedAller", False)
+            existing_entry.validated_retour = day_obj.get("validatedRetour", False)
+            
+        else:
+            # CREATION
+            new_entry = CalendarEntry(
+                user_id=user_id,
+                year=iso_year,
+                week_number=iso_week,
+                day_of_week=iso_day,
+                start_hour=day_obj.get("startHour"),
+                end_hour=day_obj.get("endHour"),
+                depart_aller=day_obj.get("departAller"),
+                destination_aller=day_obj.get("destinationAller"),
+                depart_retour=day_obj.get("departRetour"),
+                destination_retour=day_obj.get("destinationRetour"),
+                role_aller=day_obj.get("roleAller"),
+                role_retour=day_obj.get("roleRetour"),
+                validated_aller=day_obj.get("validatedAller", False),
+                validated_retour=day_obj.get("validatedRetour", False)
+            )
+            db.session.add(new_entry)
 
     db.session.commit()
-    return jsonify({"message": "Calendar ISO entries saved"}), 200
+    return jsonify({"message": "Calendar ISO entries upserted"}), 200
+
 
 
 @app.route('/propagateCalendar', methods=['POST'])
