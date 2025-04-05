@@ -38,7 +38,7 @@ function Connexion() {
       if (response.ok) {
         //localStorage.setItem("token", data.token);
         login(data.token);
-        navigate("/calendrier");
+        navigate("/");
       } else {
         setErrorMessage(data.error || "Erreur de connexion.");
       }
