@@ -483,7 +483,7 @@ function SemaineView({ week, userId, onBack }) {
                 >
                   {showAllerInfo[date]
                     ? "Masquer Aller"
-                    : "Sélectionner infos Aller"}
+                    : "Infos Aller"}
                 </button>
 
                 {showAllerInfo[date] && (
@@ -557,7 +557,7 @@ function SemaineView({ week, userId, onBack }) {
                 >
                   {showRetourInfo[date]
                     ? "Masquer Retour"
-                    : "Sélectionner infos Retour"}
+                    : "Infos Retour"}
                 </button>
 
                 {showRetourInfo[date] && (

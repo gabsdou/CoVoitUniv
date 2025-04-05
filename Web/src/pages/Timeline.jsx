@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 import "./Timeline.css";
 
@@ -19,7 +19,7 @@ function Timeline() {
     if (!userId) return;
 
     try {
-      const weeksToFetch = 4;              // ici, la semaine courante + 3 suivantes
+      const weeksToFetch = 4; // ici, la semaine courante + 3 suivantes
       const currentWeek = dayjs().isoWeek();
       let allDays = [];
 
@@ -66,7 +66,9 @@ function Timeline() {
   // Quand on clique pour demander un trajet ou gérer ses passagers
   const handleDayClick = async (passCond, date, mornEve) => {
     if (passCond === "conducteur") {
-      return navigate("/InterfaceConducteur", { state: { passCond, mornEve, date } });
+      return navigate("/InterfaceConducteur", {
+        state: { passCond, mornEve, date },
+      });
     } else {
       try {
         const response = await fetch(`http://localhost:5000/request_ride`, {
@@ -112,55 +114,74 @@ function Timeline() {
     <div className="timeline-container">
       <h1>Vos trajets (semaines à venir incluses)</h1>
       <ul className="timeline-list">
-        {weekData.days
-          .filter((day) => !day.disabled)
-          .map((day, index) => (
-            <li key={index}>
-              <strong>
-                {new Date(day.date).toLocaleDateString("fr-FR", {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                })}
-              </strong>
-              <p>
-                Aller : {day.departAller} → {day.destinationAller} à {day.startHour}h 
-                &nbsp;|&nbsp; Rôle : {day.roleAller}
-              </p>
-              <p>
-                Retour : {day.departRetour} → {day.destinationRetour} à {day.endHour}h
-                &nbsp;|&nbsp; Rôle : {day.roleRetour}
-              </p>
+        {weekData.days.filter((day) => !day.disabled).length === 0 ? (
+          <>
+          <h2 style={{color : "black" }}>Aucun Trajet trouvé</h2>
+          <p style={{ marginTop: "20px"}}>
+            Veuillez accéder à <strong><Link to="/calendrier">Mon emploi du temps</Link></strong> afin de
+            créer votre calendrier et générer des trajets.
+          </p>
+          </>
+        ) : (
+          weekData.days
+            .filter((day) => !day.disabled)
+            .map((day, index) => (
+              <li key={index}>
+                <strong>
+                  {new Date(day.date).toLocaleDateString("fr-FR", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  })}
+                </strong>
+                <p>
+                  Aller : {day.departAller} → {day.destinationAller} à{" "}
+                  {day.startHour}h &nbsp;|&nbsp; Rôle : {day.roleAller}
+                </p>
+                <p>
+                  Retour : {day.departRetour} → {day.destinationRetour} à{" "}
+                  {day.endHour}h &nbsp;|&nbsp; Rôle : {day.roleRetour}
+                </p>
 
-              <button
-                onClick={() => handleDayClick(day.roleAller, day.date, "morning")}
-                className="btn-nav"
-                style={{
-                  backgroundColor: day.validatedAller ? "green" : undefined,
-                  pointerEvents: day.validatedAller ? "none" : "auto",
-                  opacity: day.validatedAller ? 0.7 : 1,
-                }}
-              >
-                {day.roleAller === "conducteur"
-                  ? "Choisir mes passagers (Aller)"
-                  : "Demander un trajet (Aller)"}
-              </button>
+                <button
+                  onClick={() =>
+                    handleDayClick(day.roleAller, day.date, "morning")
+                  }
+                  className="btn-nav"
+                  style={{
+                    backgroundColor: day.validatedAller ? "green" : day.roleAller === "conducteur"
+                    ? "rgba(43, 82, 241, 0.4)" // bleu pour conducteur
+                    : "rgba(241, 43, 43, 0.4)", // rouge pour passager
+                    pointerEvents: day.validatedAller ? "none" : "auto",
+                    opacity: day.validatedAller ? 0.7 : 1,
+                  }}
+                >
+                  {day.roleAller === "conducteur"
+                    ? "🚗 : Choisir mes passagers (Aller)"
+                    : "🚶‍♂️ : Demander un trajet (Aller)"}
+                </button>
 
-              <button
-                onClick={() => handleDayClick(day.roleRetour, day.date, "evening")}
-                className="btn-nav"
-                style={{
-                  backgroundColor: day.validatedRetour ? "green" : undefined,
-                  pointerEvents: day.validatedRetour ? "none" : "auto",
-                  opacity: day.validatedRetour ? 0.7 : 1,
-                }}
-              >
-                {day.roleRetour === "conducteur"
-                  ? "Choisir mes passagers (Retour)"
-                  : "Demander un trajet (Retour)"}
-              </button>
-            </li>
-          ))}
+                <button
+                  onClick={() =>
+                    handleDayClick(day.roleRetour, day.date, "evening")
+                  }
+                  className="btn-nav"
+                  style={{
+                    backgroundColor: day.validatedRetour ? "green" 
+                    : day.roleRetour === "conducteur"
+                      ? "rgba(43, 82, 241, 0.4)" // bleu pour conducteur
+                      : "rgba(241, 43, 43, 0.4)", // rouge pour passager
+                    pointerEvents: day.validatedRetour ? "none" : "auto",
+                    opacity: day.validatedRetour ? 0.7 : 1,
+                  }}
+                >
+                  {day.roleRetour === "conducteur"
+                    ? "🚗 Choisir mes passagers (Retour)"
+                    : "🚶‍♂️ : Demander un trajet (Retour)"}
+                </button>
+              </li>
+            ))
+        )}
       </ul>
     </div>
   );

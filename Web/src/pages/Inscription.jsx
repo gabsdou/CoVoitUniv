@@ -15,10 +15,10 @@ function Inscription() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value} = e.target;
     setFormData({
       ...formData,
-      [name]: type === "checkbox" ? checked : value,
+      [name]:  value,
     });
   };
 
@@ -106,16 +106,7 @@ function Inscription() {
               required
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="is_driver">Conducteur? :</label>
-            <input
-              type="checkbox"
-              id="is_driver"
-              name="is_driver"
-              checked={formData.is_driver}
-              onChange={handleChange}
-            />
-          </div>
+          
           <div className="hasAccount">
             Vous avez déjà un compte?
             <br />
@@ -125,7 +116,7 @@ function Inscription() {
           {errorMessage && <p className="error-message">{errorMessage}</p>}
 
           <button type="submit" className="submit-btn">
-            Envoyer
+            Valider les informations
           </button>
         </form>
       ) : (
