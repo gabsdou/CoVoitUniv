@@ -43,7 +43,7 @@ def send_offer_email(driver, passenger, departure_hour, sender_email, sender_pas
 
     body = (
         f"Bonjour {passenger.first_name} {passenger.last_name},\n\n"
-        f"Nous espérons que vous allez bien.\n\n"
+
         f"Nous avons le plaisir de vous informer que {driver_name} vous propose un trajet en covoiturage.\n"
         f"Détails du trajet :\n"
         f"- Heure de départ : {departure_time}\n"
@@ -65,26 +65,4 @@ def send_offer_email(driver, passenger, departure_hour, sender_email, sender_pas
     )
 
 # Example usage
-from datetime import datetime
 
-class User:
-    def __init__(self, first_name, last_name, email):
-        self.first_name = first_name
-        self.last_name = last_name
-        self.email = email
-
-# Example driver and passenger
-passenger = User(first_name="Timothée", last_name="MBassidje", email="timo83game@gmail.com")
-driver = User(first_name="Denis", last_name="Linde", email="denislinde4@gmail.com")
-
-# Example departure hour
-departure_hour = datetime(2023, 12, 25, 15, 30)
-
-
-send_offer_email(
-    driver=driver,
-    passenger=passenger, 
-    departure_hour=departure_hour, 
-    sender_email=SENDER_EMAIL,
-    sender_password=SENDER_PASSWORD
-)
