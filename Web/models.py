@@ -1,5 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 import uuid
+import datetime
+from dateutil.parser import parse
 db = SQLAlchemy()
 
 
@@ -58,8 +60,54 @@ class DriverOffer(db.Model):
     # Up to you how you handle states.
 
     # Optionally record timestamps, etc.
-
     def __repr__(self):
         return f"<DriverOffer {self.id} driver={self.driver_id} request={self.ride_request_id} status={self.status}>"
+
+class CalendarEntry(db.Model):
+    __tablename__ = 'calendar_entry'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
+
+    year = db.Column(db.Integer, nullable=False)         # ex: 2025
+    week_number = db.Column(db.Integer, nullable=False)  # ISO week 1..53
+    day_of_week = db.Column(db.Integer, nullable=False)  # ISO day 1..7 (1 = lundi)
+
+    start_hour = db.Column(db.Integer, nullable=True)
+    end_hour = db.Column(db.Integer, nullable=True)
+
+    depart_aller = db.Column(db.String(200), nullable=True)
+    destination_aller = db.Column(db.String(200), nullable=True)
+    depart_retour = db.Column(db.String(200), nullable=True)
+    destination_retour = db.Column(db.String(200), nullable=True)
+
+    role_aller = db.Column(db.String(50), nullable=True)
+    role_retour = db.Column(db.String(50), nullable=True)
+
+    validated_aller = db.Column(db.Boolean, default=False)
+    validated_retour = db.Column(db.Boolean, default=False)
+
+    def __repr__(self):
+        return (f"<CalendarEntry {self.id} user={self.user_id} "
+                f"year={self.year} week={self.week_number} day={self.day_of_week}>")
+
+
+
+
+def to_real_date(year, week_number, day_of_week):
+    return datetime.date.fromisocalendar(year, week_number, day_of_week)
+
+
+
+
+def convert_iso_string_to_calendar_slots(date_str):
+    """
+    Convertit un string 'YYYY-MM-DDTHH:MM:SSZ' (approx) en (year, week_num, day_of_week).
+    """
+    dt = parse(date_str)  # ex: 2025-03-30T22:00:00.000Z
+    iso_year, iso_week, iso_day = dt.isocalendar()  # ex: (2025, 13, 7) par exemple
+    return iso_year, iso_week, iso_day
+
+
 
 ###########################################################################################################################################DATABASE############################################################################################################
