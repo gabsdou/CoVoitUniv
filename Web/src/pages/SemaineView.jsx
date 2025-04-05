@@ -2,6 +2,7 @@ import React, {useContext, useState, useEffect } from "react";
 import { Link, useNavigate, UNSAFE_NavigationContext  } from "react-router-dom";
 import ToggleSwitch from "./ToggleSwitch";
 import "./SemaineView.css";
+import dayjs from "dayjs";
 
 function useWarnIfUnsavedChanges(when, message = "Des modifications non sauvegardées seront perdues. Quitter ?") {
   const navigator = useContext(UNSAFE_NavigationContext).navigator;
@@ -401,11 +402,7 @@ function SemaineView({ week, userId, onBack }) {
       <div className="days-columns">
         {daysHours.map((dayObj, dayIndex) => {
           const { date, startHour, endHour } = dayObj;
-          const dayLabel = new Date(date).toLocaleDateString("fr-FR", {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-          });
+          const dayLabel = dayjs(date).format("dddd D MMMM");
 
           return (
             <div
