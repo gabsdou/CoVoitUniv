@@ -698,7 +698,7 @@ def find_passengers():
         total_duration = route_to_passenger["duration"] + route_to_destination["duration"]
         normal_route = get_route(driver_coords, dest_coords, "Driver->Destination")
 
-        if total_duration <= 6000:
+        if total_duration <= 120:
             possible_passengers.append({
                 "ride_request_id": request_obj.id,
                 "passenger_id": passenger_user.id,

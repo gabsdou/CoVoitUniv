@@ -10,27 +10,29 @@ import logging
 
 def geocode_address(address):
     """
-    Effectue le géocodage d'une adresse en utilisant l'API adresse.data.gouv.fr.
+    Effectue le géocodage d'une adresse en utilisant l'API adresse.data.gouv.fr, 
+    avec mise en cache pour accélérer les calculs.
 
-    Cette fonction envoie une requête à l'API afin d'obtenir les coordonnées (latitude et longitude)
-    correspondant à l'adresse donnée. Si la réponse est valide, elle renvoie les coordonnées arrondies
-    à 6 décimales.
+    Cette fonction vérifie d'abord si l'adresse est présente dans le cache (table AddressCache).
+    Si c'est le cas, les coordonnées mises en cache sont retournées.
+    Sinon, une requête est effectuée vers l'API, les coordonnées (latitude et longitude)
+    sont extraites, arrondies à 6 décimales, enregistrées dans le cache, puis retournées.
 
     :param address: (str) Adresse à géocoder.
     :return: (tuple) (lat, lon) si le géocodage est réussi, sinon (None, None).
     """
-    url = f'https://api-adresse.data.gouv.fr/search/?q={address}&limit=1'
+    # Vérifier le cache
+    cached_entry = AddressCache.query.filter_by(address=address).first()
+    if cached_entry:
+        print(f"Cache hit for address: {address}")
+        return (cached_entry.lat, cached_entry.lon)
     
-    # Vous pouvez éventuellement décommenter la partie de cache pour éviter des appels redondants.
-    # cached_entry = AddressCache.query.filter_by(address=address).first()
-    # if cached_entry:
-    #     print(f"Cache hit for address: {address}")
-    #     return (cached_entry.lat, cached_entry.lon)
-
-    print(f"Cache miss for address: {address}. Calling Nominatim API...")
+    # Si l'adresse n'est pas en cache, appeler l'API
+    url = f'https://api-adresse.data.gouv.fr/search/?q={address}&limit=1'
+    print(f"Cache miss for address: {address}. Calling API data.gouv.fr...")
     response = requests.get(url)
     
-    # Vérifier que la réponse HTTP est 200 et contient des données
+    # Vérifier que la réponse HTTP est 200
     if response.status_code == 200:
         data = response.json()
         if data:
@@ -38,19 +40,18 @@ def geocode_address(address):
             lat = coords[1]
             lon = coords[0]
             
-            # Vérifier que les coordonnées sont valides
+            # Vérifier que les coordonnées sont présentes
             if lat is not None and lon is not None:
                 try:
                     lat = float(lat)
                     lon = float(lon)
-                    # Arrondir les valeurs et vérifier le type
                     if isinstance(lat, (int, float)) and isinstance(lon, (int, float)):
                         lat = round(lat, 6)
                         lon = round(lon, 6)
-                        # Possibilité d'enregistrer dans le cache (commenté ici)
-                        # new_entry = AddressCache(address=address, lat=lat, lon=lon)
-                        # db.session.add(new_entry)
-                        # db.session.commit()
+                        # Enregistrer les coordonnées dans le cache
+                        new_entry = AddressCache(address=address, lat=lat, lon=lon)
+                        db.session.add(new_entry)
+                        db.session.commit()
                         return lat, lon
                     else:
                         raise ValueError("Les coordonnées ne sont pas valides")
