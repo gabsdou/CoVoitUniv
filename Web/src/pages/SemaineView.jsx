@@ -390,7 +390,13 @@ function SemaineView({ week, userId, onBack }) {
 
 
 
-
+<button
+   className="btn-save"
+   onClick={handleToggleWeekDisabled}
+   style={{ marginBottom: "20px" }}
+ >
+   🔁 Activer / Désactiver toute la semaine
+ </button>
       <div className="days-columns">
         {daysHours.map((dayObj, dayIndex) => {
           const { date, startHour, endHour } = dayObj;
@@ -487,7 +493,7 @@ function SemaineView({ week, userId, onBack }) {
                         handleDepartAllerChange(dayIndex, e.target.value)
                       }
                     >
-                      <option value="Maison">Maison</option>
+                      <option value="Maison">Adresse Personnelle</option>
                       <option value="Villetaneuse">Villetaneuse</option>
                       <option value="Saint-Denis">Saint-Denis</option>
                       <option value="Bobigny">Bobigny</option>
@@ -504,7 +510,7 @@ function SemaineView({ week, userId, onBack }) {
                       }
                     >
                       <option value="Villetaneuse">Villetaneuse</option>
-                      <option value="Maison">Maison</option>
+                      <option value="Maison">Adresse Personnelle</option>
                       <option value="Saint-Denis">Saint-Denis</option>
                       <option value="Bobigny">Bobigny</option>
                     </select>
@@ -561,7 +567,7 @@ function SemaineView({ week, userId, onBack }) {
                         handleDepartRetourChange(dayIndex, e.target.value)
                       }
                     >
-                      <option value="Maison">Maison</option>
+                      <option value="Maison">Adresse Personnelle</option>
                       <option value="Villetaneuse">Villetaneuse</option>
                       <option value="Saint-Denis">Saint-Denis</option>
                       <option value="Bobigny">Bobigny</option>
@@ -580,7 +586,7 @@ function SemaineView({ week, userId, onBack }) {
                       }
                     >
                       <option value="Villetaneuse">Villetaneuse</option>
-                      <option value="Maison">Maison</option>
+                      <option value="Maison">Adresse Personnelle</option>
                       <option value="Saint-Denis">Saint-Denis</option>
                       <option value="Bobigny">Bobigny</option>
                     </select>
@@ -618,13 +624,7 @@ function SemaineView({ week, userId, onBack }) {
           );
         })}
       </div>
-      <button
-        className="btn-save"
-        onClick={handleToggleWeekDisabled}
-        style={{ marginBottom: "20px" }}
-      >
-        🔁 Activer / Désactiver toute la semaine
-      </button>
+
       <button onClick={handleSaveWeek} className="btn-save">
         💾 Sauvegarder
       </button>
