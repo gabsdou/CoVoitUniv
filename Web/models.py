@@ -85,6 +85,7 @@ class RideRequest(db.Model):
     lon = db.Column(db.Float, nullable=True)
     start_hour = db.Column(db.Integer, nullable=False)
     end_hour = db.Column(db.Integer, nullable=False)
+    timeslot = db.Column(db.String(50), nullable=True)  # e.g. "9-17"
     matched_driver_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=True)
 
     def __repr__(self):

@@ -534,6 +534,7 @@ def request_ride():
         existing_request.destination = destination_address
         existing_request.lat = lat
         existing_request.lon = lon
+        existing_request.time_slot = time_slot
         existing_request.start_hour = start_hour
         existing_request.end_hour = end_hour
         db.session.commit()
@@ -555,6 +556,7 @@ def request_ride():
             destination=destination_address,
             lat=lat,
             lon=lon,
+            time_slot=time_slot,
             start_hour=start_hour,
             end_hour=end_hour
         )
@@ -649,7 +651,8 @@ def find_passengers():
         passenger_user = User.query.filter_by(id=request_obj.user_id).first()
         if not passenger_user:
             continue
-
+        if request_obj.timeslot != time_slot:
+            continue
         passenger_entry = CalendarEntry.query.filter_by(
             user_id=passenger_user.id,
             year=iso_year,
@@ -658,7 +661,9 @@ def find_passengers():
         ).first()
         if not passenger_entry:
             continue
-
+        
+        if passenger_entry.disabled:
+            continue
         if time_slot.lower() == "morning":
             passenger_address = replace_placeholders(passenger_entry.depart_aller, passenger_user.address)
             passenger_destination = replace_placeholders(passenger_entry.destination_aller, passenger_user.address)
