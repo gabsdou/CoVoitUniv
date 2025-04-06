@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
@@ -8,6 +8,7 @@ import MoisView from "./MoisView";
 import SemaineView from "./SemaineView";
 import 'dayjs/locale/fr';
 import "./Calendrier.css";
+import { useSearchParams } from 'react-router-dom';
 
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -51,16 +52,32 @@ function Calendrier2025({ }) {
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedWeek, setSelectedWeek] = useState(null);
 
+  const [searchParams] = useSearchParams();
+  const queryWeek = searchParams.get("week");  // ex : "16" si ?week=16
+  useEffect(() => {
+       if (queryWeek) {
+         const w = parseInt(queryWeek, 10);
+         const paramWeekData = getDaysInIsoWeek(YEAR, w);
+         setSelectedWeek(paramWeekData);
+       }
+      }, [queryWeek]);
+
   if (!userId) {
     return <p>Veuillez vous connecter.</p>;
   }
 
-  const today = dayjs();
-  const currentMonthIndex = today.month();
+  let effectiveToday = dayjs();
+  const day = effectiveToday.day(); // 0 = dimanche, 6 = samedi
+  if (day === 6) effectiveToday = effectiveToday.add(2, "day");
+  else if (day === 0) effectiveToday = effectiveToday.add(1, "day");
+
+  const currentMonthIndex = effectiveToday.month();
   const weeksInMonth = getWeeksInMonth(YEAR, currentMonthIndex);
+
   const currentWeekData = weeksInMonth.find(week =>
-    week.days.some(day => day.isSame(today, "day"))
+    week.days.some(d => d.isSame(effectiveToday, "day"))
   );
+
 
   // ** Si une semaine est sélectionnée, affiche la SemaineView **
   if (selectedWeek) {
@@ -104,7 +121,7 @@ function Calendrier2025({ }) {
             key={i}
             onClick={() => setSelectedMonth(i)}
             id={`month-${i}`}
-            className={`month-box ${today.month() === i ? "current-month" : ""}`}
+            className={`month-box ${effectiveToday.month() === i ? "current-month" : ""}`}
           >
             {m}
           </div>
@@ -113,5 +130,10 @@ function Calendrier2025({ }) {
     </div>
   );
 }
+function getDaysInIsoWeek(year, isoWeekNumber) {
+     const start = dayjs().year(year).isoWeek(isoWeekNumber).startOf('isoWeek');
+     const days = Array.from({ length: 7 }, (_, i) => start.add(i, 'day'));
+     return { weekNumber: isoWeekNumber, days };
+   }
 
 export default Calendrier2025;

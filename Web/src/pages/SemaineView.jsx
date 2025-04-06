@@ -365,18 +365,27 @@ function SemaineView({ week, userId, onBack }) {
       </button>
       <h2>Semaine {week.weekNumber}</h2>
       <div style={{ marginTop: "20px", display: "flex", justifyContent: "center", gap: "10px" }}>
+      <div style={{ marginTop: "20px", display: "flex", justifyContent: "center", gap: "10px" }}>
   <button
     className="btn-save"
-    onClick={() => window.location.href = `/Calendrier?week=${week.weekNumber - 1}`}
+    onClick={async () => {
+      await handleSaveWeek();
+      window.location.href = `/Calendrier?week=${week.weekNumber - 1}`;
+    }}
   >
     ← Semaine précédente
   </button>
   <button
     className="btn-save"
-    onClick={() => window.location.href = `/Calendrier?week=${week.weekNumber + 1}`}
+    onClick={async () => {
+      await handleSaveWeek();
+      window.location.href = `/Calendrier?week=${week.weekNumber + 1}`;
+    }}
   >
     Semaine suivante →
   </button>
+</div>
+
 </div>
 
 

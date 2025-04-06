@@ -30,7 +30,7 @@ function MoisView({ year, monthData,userId, onBack }) {
           {weeks.map((week) => (
             <button
             key={week.weekNumber}
-            className={`week-button ${week.days.some(day => day.format("YYYY-MM-DD") === today) ? "current-week" : ""}`}
+            className={`week-button ${week.days.some(day => day.toISOString().split("T")[0] === today) ? "current-week" : ""}`}
             onClick={() => setSelectedWeek(week)}
           >
             Semaine du {formatDate(week.days[0])} au {formatDate(week.days[6])}
