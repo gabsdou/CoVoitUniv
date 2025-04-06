@@ -37,7 +37,13 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="manageReact.deploy_week">
 <span class="sig-prename descclassname"><span class="pre">manageReact.</span></span><span class="sig-name descname"><span class="pre">deploy_week</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#manageReact.deploy_week" title="Lien vers cette définition">¶</a></dt>
-<dd><p>Endpoint: /propagateCalendar
+<dd><p>Anciennement on dupliquait user.calendar[source_week] -&gt; toutes les semaines.
+Maintenant qu’on n’a plus user.calendar, on lit la table CalendarEntry.
+On garde la même signature JSON, mais on change la logique.</p>
+<p>{ « user_id »: « … », « source_week »: 6 }
+On copie toutes les entrées de la semaine 6 vers les semaines 1..52,
+en évitant les doublons (check de non-duplication).
+Endpoint: /propagateCalendar
 Méthode: POST</p>
 <dl class="simple">
 <dt>Description:</dt><dd><p>Duplication de la semaine source (spécifiée par « source_week ») dans la table CalendarEntry
@@ -610,6 +616,11 @@ customized per-model by overriding <code class="xref py py-attr docutils literal
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="models.RideRequest.timeslot">
+<span class="sig-name descname"><span class="pre">timeslot</span></span><a class="headerlink" href="#models.RideRequest.timeslot" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="models.RideRequest.user_id">
 <span class="sig-name descname"><span class="pre">user_id</span></span><a class="headerlink" href="#models.RideRequest.user_id" title="Lien vers cette définition">¶</a></dt>
 <dd></dd></dl>
@@ -748,10 +759,12 @@ et du remplacement de placeholders dans le projet.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="utils.geocode_address">
 <span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">geocode_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.geocode_address" title="Lien vers cette définition">¶</a></dt>
-<dd><p>Effectue le géocodage d’une adresse en utilisant l’API adresse.data.gouv.fr.</p>
-<p>Cette fonction envoie une requête à l’API afin d’obtenir les coordonnées (latitude et longitude)
-correspondant à l’adresse donnée. Si la réponse est valide, elle renvoie les coordonnées arrondies
-à 6 décimales.</p>
+<dd><p>Effectue le géocodage d’une adresse en utilisant l’API adresse.data.gouv.fr,
+avec mise en cache pour accélérer les calculs.</p>
+<p>Cette fonction vérifie d’abord si l’adresse est présente dans le cache (table AddressCache).
+Si c’est le cas, les coordonnées mises en cache sont retournées.
+Sinon, une requête est effectuée vers l’API, les coordonnées (latitude et longitude)
+sont extraites, arrondies à 6 décimales, enregistrées dans le cache, puis retournées.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Paramètres<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>address</strong> – (str) Adresse à géocoder.</p>

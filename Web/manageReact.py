@@ -538,7 +538,7 @@ def request_ride():
     if not lat or not lon:
         return jsonify({'error': 'Unable to geocode departure address'}), 400
 
-    existing_request = RideRequest.query.filter_by(user_id=user_id, day=day_str,time_slot=time_slot).first()
+    existing_request = RideRequest.query.filter_by(user_id=user_id, day=day_str,timeslot=time_slot).first()
 
     if existing_request:
         # Mise à jour de la demande existante
@@ -546,7 +546,7 @@ def request_ride():
         existing_request.destination = destination_address
         existing_request.lat = lat
         existing_request.lon = lon
-        existing_request.time_slot = time_slot
+        existing_request.timeslot = time_slot
         existing_request.start_hour = start_hour
         existing_request.end_hour = end_hour
         db.session.commit()
@@ -568,7 +568,7 @@ def request_ride():
             destination=destination_address,
             lat=lat,
             lon=lon,
-            time_slot=time_slot,
+            timeslot=time_slot,
             start_hour=start_hour,
             end_hour=end_hour
         )
