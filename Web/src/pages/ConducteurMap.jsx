@@ -185,7 +185,7 @@ const InterfaceConducteur = () => {
       const response = await fetch(`http://localhost:5000/find_passengers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId, timeslot: mornEve, day: date }),
+        body: JSON.stringify({ user_id: userId, timeSlot: mornEve, day: date }),
       });
 
       const data = await response.json();
@@ -328,9 +328,10 @@ const InterfaceConducteur = () => {
     }
   }, [map, userId, layerGroup]);
 
-  const formatDuration = (durationInSeconds) => {
-    if (!durationInSeconds) return "";
-    const minutes = Math.round(durationInSeconds / 60);
+  const formatDuration = (minutes) => {
+    if (!minutes) return "";
+    /*arrondir minutes*/
+    minutes = Math.round(minutes);
     return `+${minutes} min`;
   };
 
@@ -435,7 +436,7 @@ const InterfaceConducteur = () => {
                     </p>
                     <span style={{ fontSize: "0.9em", color: "#f5deb3" }}>
                       {formatDuration(
-                        passager.routes?.driver_to_passenger?.duration
+                        (passager.passengers_duration - passager.normal_duration)
                       )}
                     </span>
                   </div>

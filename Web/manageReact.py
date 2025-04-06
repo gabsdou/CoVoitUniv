@@ -250,6 +250,9 @@ def save_calendar_iso():
         iso_year, iso_week, iso_day = convert_iso_string_to_calendar_slots(date_str)
         print(f"Processing date: {date_str} -> Year: {iso_year}, Week: {iso_week}, Day: {iso_day}", flush=True)
 
+        # placeholders ...
+
+        # -- RECHERCHE D'UNE ENTREE EXISTANTE --
         # Recherche d'une entrée existante
         existing_entry = CalendarEntry.query.filter_by(
             user_id=user_id,
@@ -257,6 +260,7 @@ def save_calendar_iso():
             week_number=iso_week,
             day_of_week=iso_day
         ).first()
+
 
         if existing_entry:
             # Mise à jour
@@ -272,6 +276,7 @@ def save_calendar_iso():
             existing_entry.role_retour = day_obj.get("roleRetour")
             existing_entry.validated_aller = day_obj.get("validatedAller", False)
             existing_entry.validated_retour = day_obj.get("validatedRetour", False)
+
         else:
             # Création
             print("disabled", day_obj.get("disabled", False), flush=True)
@@ -302,6 +307,13 @@ def save_calendar_iso():
 @log_call
 def deploy_week():
     """
+    Anciennement on dupliquait user.calendar[source_week] -> toutes les semaines.
+    Maintenant qu'on n'a plus user.calendar, on lit la table CalendarEntry.
+    On garde la même signature JSON, mais on change la logique.
+
+    { "user_id": "...", "source_week": 6 }
+    On copie toutes les entrées de la semaine 6 vers les semaines 1..52,
+    en évitant les doublons (check de non-duplication).
     Endpoint: /propagateCalendar
     Méthode: POST
 
@@ -476,7 +488,7 @@ def request_ride():
         Crée ou met à jour une demande de trajet (RideRequest) pour un utilisateur pour un jour donné.
         Si une demande existe déjà pour ce jour, elle est mise à jour.
         Les informations (adresse de départ, destination, horaires) sont obtenues depuis CalendarEntry et transformées via replace_placeholders.
-    
+
     Entrée (JSON):
         - user_id (str)
         - day (str): date au format "YYYY-MM-DD"
@@ -583,12 +595,12 @@ def find_passengers():
     Description:
         Recherche des demandes de trajet (RideRequest) potentielles correspondant aux critères d'un conducteur.
         Compare l'heure et les adresses (départ/destination) dans le calendrier des conducteurs et passagers.
-    
+
     Entrée (JSON):
         - user_id (str): l'ID du conducteur
         - day (str): date ("YYYY-MM-DD")
         - time_slot (str): "morning" ou "evening" (optionnel, défaut "morning")
-    
+
     Sortie (JSON):
         Une liste de demandes potentielles avec des informations sur le passager et les itinéraires.
     """
@@ -660,8 +672,10 @@ def find_passengers():
             day_of_week=iso_day
         ).first()
         if not passenger_entry:
+
+        # Selon morning/evening, on va chercher l'adresse de départ/destination et l'heure
             continue
-        
+
         if passenger_entry.disabled:
             continue
         if time_slot.lower() == "morning":
@@ -729,6 +743,7 @@ def find_passengers():
                     }
                 }
             })
+
 
     return jsonify({"possible_passengers": possible_passengers}), 200
 
