@@ -1,13 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, jsonify # type: ignore
+from flask import Flask, request, jsonify # type: ignore
 from flask_sqlalchemy import SQLAlchemy # type: ignore
 from flask_cors import CORS # type: ignore
 from testCovoit import geocode_address, get_route, replace_placeholders
-from models import db,User,RideRequest,DriverOffer,CalendarEntry,convert_iso_string_to_calendar_slots,local_midnight_to_utc_iso  # <-- your models
+from models import db,User,RideRequest,DriverOffer,CalendarEntry,convert_iso_string_to_calendar_slots,local_midnight_to_utc_iso, SavedAddress
 from pingMail import send_offer_email,SENDER_EMAIL,SENDER_PASSWORD
-import requests
-import uuid
-import json
-
 
 
 # Importez vos fonctions utilitaires et vos modèles depuis un autre fichier, p. ex.:
@@ -79,13 +75,14 @@ def login():
         return jsonify({'error': 'Invalid credentials : wrong password'}), 401
 
 
-@app.route('/user/<string:id>', methods=['GET'])
+@app.route('/user/<id>', methods=['GET'])
 def user_info(id):
     user = User.query.filter_by(id=id).first()
     if user:
         return jsonify({
             'first_name': user.first_name,
             'last_name': user.last_name,
+            'email': user.email,
             'address': user.address,
             'is_driver': user.is_driver
         })
@@ -670,6 +667,29 @@ def ride_offers():
             })
 
     return jsonify({"offers": offers_data}), 200
+
+# Route pour récupérer les adresses sauvegardées d'un utilisateur
+@app.route('/user/<id>/addresses', methods=['GET'])
+def get_addresses(id):
+    addresses = SavedAddress.query.filter_by(user_id=id).all()
+    addresses_list = [
+        {'id': addr.id, 'name': addr.name, 'address': addr.address}
+        for addr in addresses
+    ]
+    return jsonify(addresses_list)
+
+# Route pour ajouter une nouvelle adresse
+@app.route('/user/<id>/addresses', methods=['POST'])
+def add_address(id):
+    data = request.get_json()
+    name = data.get('name')
+    address = data.get('address')
+    if not name or not address:
+        return jsonify({'error': 'Champ manquant'}), 400
+    new_address = SavedAddress(name=name, address=address, user_id=id)
+    db.session.add(new_address)
+    db.session.commit()
+    return jsonify({'message': 'Adresse ajoutée', 'id': new_address.id}), 201
 
 
 if __name__ == '__main__':

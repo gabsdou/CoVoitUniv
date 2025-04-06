@@ -8,7 +8,8 @@ import Connexion from "./pages/Connexion";
 import ConducteurMap from "./pages/ConducteurMap";
 import { AuthProvider } from "./context/AuthContext";
 import Timeline from "./pages/Timeline";
-
+import Profile from "./pages/Profile";
+import AddAddress from "./pages/AddAddress";
 import Calendrier from "./pages/Calendrier";
 import "./App.css";
 
@@ -27,7 +28,8 @@ function App() {
             <Route path="/InterfaceConducteur" element={<ConducteurMap />} />
             <Route path="/Calendrier" element={<Calendrier />} />
             <Route path="/timeline" element={<Timeline />} />
-
+            <Route path="/profile/:id" element={<Profile />} />
+            <Route path="/profile/:id/add-address" element={<AddAddress />} />
           </Routes>
         </main>
         <Footer />

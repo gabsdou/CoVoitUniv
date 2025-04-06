@@ -93,6 +93,12 @@ class CalendarEntry(db.Model):
                 f"year={self.year} week={self.week_number} day={self.day_of_week}>")
 
 
+class SavedAddress(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
 
 
 def to_real_date(year, week_number, day_of_week):

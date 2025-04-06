@@ -4,7 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import "./Header.css"; // Ajouter le fichier CSS pour styliser le header
 
 function Header() {
-  const { isAuthenticated, logout } = useContext(AuthContext);
+  const { isAuthenticated, logout, userId } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -38,6 +38,9 @@ function Header() {
             <Link to="/timeline" className="nav-link">
             Mes trajets
             </Link>
+            <Link to={`/profile/${userId}`} className="nav-link">
+              Mon Profil
+            </Link>
 
             <button onClick={handleLogout} className="nav-link nav-contact">
               Se déconnecter
@@ -50,5 +53,4 @@ function Header() {
     </header>
   );
 }
-
 export default Header;

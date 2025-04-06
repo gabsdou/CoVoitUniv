@@ -4,6 +4,8 @@ import ToggleSwitch from "./ToggleSwitch";
 import "./SemaineView.css";
 import dayjs from "dayjs";
 
+
+
 function useWarnIfUnsavedChanges(when, message = "Des modifications non sauvegardées seront perdues. Quitter ?") {
   const navigator = useContext(UNSAFE_NavigationContext).navigator;
 
@@ -24,8 +26,6 @@ function useWarnIfUnsavedChanges(when, message = "Des modifications non sauvegar
         push(...args);
       }
     };
-
-
     return () => {
       navigator.push = push;
     };
@@ -169,7 +169,26 @@ function SemaineView({ week, userId, onBack }) {
     return "Maison";
   };
 
+
   const getDefaultWeekSchedule = () => {
+    const frenchHolidays = [
+      "01-01",
+      "05-01",
+      "05-08",
+      "07-14",
+      "08-15",
+      "11-01",
+      "11-11",
+      "12-25"
+      ].map((d) => dayjs(d).format("MM-DD"));
+      
+    week.days.forEach((dayString) => {
+    const isHoliday = frenchHolidays.includes(dayjs(dayString).format("MM-DD"));
+    setDisabledDays((prev) => ({
+      ...prev,
+      [dayString]: isHoliday,
+    }));
+  });
     return week.days
       .filter((date) => {
         const dayOfWeek = new Date(date).getDay();
@@ -185,7 +204,6 @@ function SemaineView({ week, userId, onBack }) {
         destinationRetour: "Maison",
         roleAller: "passager",
         roleRetour: "passager",
-        disabled: false,
         validatedAller: false,
         validatedRetour: false,
       }));
@@ -344,9 +362,6 @@ function SemaineView({ week, userId, onBack }) {
         return "";
       }
     };
-
-
-
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
