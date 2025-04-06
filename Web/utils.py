@@ -24,12 +24,10 @@ def geocode_address(address):
     # Vérifier le cache
     cached_entry = AddressCache.query.filter_by(address=address).first()
     if cached_entry:
-        print(f"Cache hit for address: {address}")
         return (cached_entry.lat, cached_entry.lon)
     
     # Si l'adresse n'est pas en cache, appeler l'API
     url = f'https://api-adresse.data.gouv.fr/search/?q={address}&limit=1'
-    print(f"Cache miss for address: {address}. Calling API data.gouv.fr...")
     response = requests.get(url)
     
     # Vérifier que la réponse HTTP est 200

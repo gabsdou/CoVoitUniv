@@ -644,7 +644,6 @@ def find_passengers():
 
     time_tolerance = 0.5  # ±30 minutes
     possible_passengers = []
-    print(f"Found {len(ride_requests)} ride requests for {day_str}", flush=True)
 
     for request_obj in ride_requests:
         passenger_user = User.query.filter_by(id=request_obj.user_id).first()
