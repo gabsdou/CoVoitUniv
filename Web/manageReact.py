@@ -6,17 +6,11 @@ from models import db,User,RideRequest,DriverOffer,CalendarEntry,convert_iso_str
 from pingMail import send_offer_email,SENDER_EMAIL,SENDER_PASSWORD
 
 
-# Importez vos fonctions utilitaires et vos modèles depuis un autre fichier, p. ex.:
-# from models import db, User, RideRequest, DriverOffer, CalendarEntry, convert_iso_string_to_calendar_slots
-# from testCovoit import geocode_address, get_route, replace_placeholders
-# from pingMail import send_offer_email, SENDER_EMAIL, SENDER_PASSWORD
-
 app = Flask(__name__)
 CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SECRET_KEY'] = 'your_secret_key'
 
-# db.init_app(app)  # à faire si vous utilisez SQLAlchemy / models init_app
 
 @app.route('/signup', methods=['POST'])
 def signup():
