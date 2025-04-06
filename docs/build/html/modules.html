@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+
+<html lang="fr" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Modules &#8212; Documentation CovoitUniv 1.0.0</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=05dadb3a"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/translations.js?v=e6b791cb"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-manageReact">
+<span id="modules"></span><h1>Modules<a class="headerlink" href="#module-manageReact" title="Lien vers cette rubrique">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="manageReact.deploy_week">
+<span class="sig-prename descclassname"><span class="pre">manageReact.</span></span><span class="sig-name descname"><span class="pre">deploy_week</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#manageReact.deploy_week" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Endpoint: /propagateCalendar
+Méthode: POST</p>
+<dl class="simple">
+<dt>Description:</dt><dd><p>Duplication de la semaine source (spécifiée par « source_week ») dans la table CalendarEntry
+pour toutes les semaines (1 à 52). Avant création d’une nouvelle entrée, on vérifie qu’il n’existe
+pas déjà une entrée pour la même combinaison (user_id, year, week_number, day_of_week) pour éviter la duplication.</p>
+</dd>
+<dt>Entrée (JSON):</dt><dd><ul class="simple">
+<li><p>user_id (str)</p></li>
+<li><p>source_week (int)</p></li>
+</ul>
+</dd>
+<dt>Sortie (JSON):</dt><dd><p>Un message indiquant le nombre d’entrées créées.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="manageReact.find_passengers">
+<span class="sig-prename descclassname"><span class="pre">manageReact.</span></span><span class="sig-name descname"><span class="pre">find_passengers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#manageReact.find_passengers" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Endpoint: /find_passengers
+Méthode: POST</p>
+<dl class="simple">
+<dt>Description:</dt><dd><p>Recherche des demandes de trajet (RideRequest) potentielles correspondant aux critères d’un conducteur.
+Compare l’heure et les adresses (départ/destination) dans le calendrier des conducteurs et passagers.</p>
+</dd>
+<dt>Entrée (JSON):</dt><dd><ul class="simple">
+<li><p>user_id (str): l’ID du conducteur</p></li>
+<li><p>day (str): date (« YYYY-MM-DD »)</p></li>
+<li><p>time_slot (str): « morning » ou « evening » (optionnel, défaut « morning »)</p></li>
+</ul>
+</dd>
+<dt>Sortie (JSON):</dt><dd><p>Une liste de demandes potentielles avec des informations sur le passager et les itinéraires.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="manageReact.get_calendar">
+<span class="sig-prename descclassname"><span class="pre">manageReact.</span></span><span class="sig-name descname"><span class="pre">get_calendar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#manageReact.get_calendar" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Endpoint: /getCal/&lt;user_id&gt;
+Méthode: GET</p>
+<dl>
+<dt>Description:</dt><dd><p>Récupère les entrées de calendrier pour un utilisateur donné et une semaine spécifiée (via le paramètre “indexWeek”)
+et reconstruit un objet JSON au format :
+{</p>
+<blockquote>
+<div><p>« weekNumber »: &lt;indexWeek&gt;,
+« days »: [</p>
+<blockquote>
+<div><dl class="simple">
+<dt>{</dt><dd><p>« date »: « &lt;ISO8601&gt; »,  # reconstitué à partir de year, week_number, day_of_week
+« startHour »: &lt;int&gt;,
+« endHour »: &lt;int&gt;,
+« departAller »: &lt;str&gt;,
+« destinationAller »: &lt;str&gt;,
+« departRetour »: &lt;str&gt;,
+« destinationRetour »: &lt;str&gt;,
+« disabled »: &lt;bool&gt;,
+« roleAller »: &lt;str&gt;,
+« roleRetour »: &lt;str&gt;,
+« validatedAller »: &lt;bool&gt;,
+« validatedRetour »: &lt;bool&gt;</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>}</p>
+</dd>
+<dt>Entrée (query parameter):</dt><dd><ul class="simple">
+<li><p>indexWeek (int)</p></li>
+</ul>
+</dd>
+<dt>Sortie (JSON):</dt><dd><p>L’objet calendrier pour la semaine spécifiée, ou null si aucune donnée.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="manageReact.log_call">
+<span class="sig-prename descclassname"><span class="pre">manageReact.</span></span><span class="sig-name descname"><span class="pre">log_call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#manageReact.log_call" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Décorateur pour enregistrer les appels et retours de fonctions dans le fichier trace.log.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>func</strong> – La fonction à instrumenter.</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>La fonction décorée qui logue l’appel et le retour.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="manageReact.login">
+<span class="sig-prename descclassname"><span class="pre">manageReact.</span></span><span class="sig-name descname"><span class="pre">login</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#manageReact.login" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Endpoint: /login
+Méthode: POST</p>
+<dl class="simple">
+<dt>Description:</dt><dd><p>Authentifie un utilisateur en vérifiant son email et son mot de passe.</p>
+</dd>
+<dt>Entrée (JSON):</dt><dd><ul class="simple">
+<li><p>email (str): Adresse e-mail.</p></li>
+<li><p>password (str): Mot de passe.</p></li>
+</ul>
+</dd>
+<dt>Sortie (JSON):</dt><dd><ul class="simple">
+<li><p>Un token (ici, l’ID de l’utilisateur) en cas de succès, ou un message d’erreur.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="manageReact.offer_passenger">
+<span class="sig-prename descclassname"><span class="pre">manageReact.</span></span><span class="sig-name descname"><span class="pre">offer_passenger</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#manageReact.offer_passenger" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Endpoint: /offerPassenger
+Méthode: POST</p>
+<dl class="simple">
+<dt>Description:</dt><dd><p>Permet à un conducteur d’offrir un trajet à une demande de trajet (RideRequest) existante.
+Vérifie que le conducteur n’offre pas un trajet à lui-même, envoie un email de notification au passager,
+puis crée une entrée dans DriverOffer.</p>
+</dd>
+<dt>Entrée (JSON):</dt><dd><ul class="simple">
+<li><p>driver_id (str)</p></li>
+<li><p>ride_request_id (str)</p></li>
+<li><p>departure_hour (int)</p></li>
+</ul>
+</dd>
+<dt>Sortie (JSON):</dt><dd><p>Un message de succès avec l’ID de l’offre créée.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="manageReact.passengers">
+<span class="sig-prename descclassname"><span class="pre">manageReact.</span></span><span class="sig-name descname"><span class="pre">passengers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#manageReact.passengers" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Endpoint: /passengers/&lt;id&gt;
+Méthode: GET</p>
+<dl class="simple">
+<dt>Description:</dt><dd><p>Récupère la liste de tous les utilisateurs qui ne sont pas conducteurs, à l’exclusion de l’utilisateur spécifié.</p>
+</dd>
+<dt>Paramètre d’URL:</dt><dd><ul class="simple">
+<li><p>id (str): Identifiant de l’utilisateur à exclure.</p></li>
+</ul>
+</dd>
+<dt>Sortie (JSON):</dt><dd><p>Liste des passagers (prénom, nom, adresse).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="manageReact.request_ride">
+<span class="sig-prename descclassname"><span class="pre">manageReact.</span></span><span class="sig-name descname"><span class="pre">request_ride</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#manageReact.request_ride" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Endpoint: /request_ride
+Méthode: POST</p>
+<dl class="simple">
+<dt>Description:</dt><dd><p>Crée ou met à jour une demande de trajet (RideRequest) pour un utilisateur pour un jour donné.
+Si une demande existe déjà pour ce jour, elle est mise à jour.
+Les informations (adresse de départ, destination, horaires) sont obtenues depuis CalendarEntry et transformées via replace_placeholders.</p>
+</dd>
+<dt>Entrée (JSON):</dt><dd><ul class="simple">
+<li><p>user_id (str)</p></li>
+<li><p>day (str): date au format « YYYY-MM-DD »</p></li>
+<li><p>timeSlot (str): « morning » ou « evening »</p></li>
+</ul>
+</dd>
+<dt>Sortie (JSON):</dt><dd><p>Informations sur la demande de trajet créée ou mise à jour.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="manageReact.ride_offers">
+<span class="sig-prename descclassname"><span class="pre">manageReact.</span></span><span class="sig-name descname"><span class="pre">ride_offers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#manageReact.ride_offers" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Endpoint: /rideOffers
+Méthode: POST</p>
+<dl class="simple">
+<dt>Description:</dt><dd><p>Récupère toutes les offres de trajet (DriverOffer) associées à une demande de trajet (RideRequest) donnée.</p>
+</dd>
+<dt>Entrée (JSON):</dt><dd><ul class="simple">
+<li><p>ride_request_id (str)</p></li>
+</ul>
+</dd>
+<dt>Sortie (JSON):</dt><dd><p>Une liste d’offres comprenant l’ID de l’offre, le statut, le nom et l’adresse du conducteur.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="manageReact.save_calendar_iso">
+<span class="sig-prename descclassname"><span class="pre">manageReact.</span></span><span class="sig-name descname"><span class="pre">save_calendar_iso</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#manageReact.save_calendar_iso" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Endpoint: /saveCal
+Méthode: POST</p>
+<dl class="simple">
+<dt>Description:</dt><dd><p>Sauvegarde (ou met à jour) les entrées de calendrier dans la table CalendarEntry.
+Pour chaque jour fourni dans « calendar_changes », le système vérifie s’il existe déjà
+une entrée pour (user_id, year, week_number, day_of_week). Si c’est le cas, il met à jour;
+sinon, il crée une nouvelle entrée.</p>
+</dd>
+<dt>Entrée (JSON):</dt><dd><ul class="simple">
+<li><p>user_id (str): Identifiant de l’utilisateur.</p></li>
+<li><dl class="simple">
+<dt>calendar_changes (dict): Contient « weekNumber » et une liste « days » d’objets avec :</dt><dd><ul>
+<li><p>date (str, ISO8601)</p></li>
+<li><p>startHour (int)</p></li>
+<li><p>endHour (int)</p></li>
+<li><p>departAller (str)</p></li>
+<li><p>destinationAller (str)</p></li>
+<li><p>departRetour (str)</p></li>
+<li><p>destinationRetour (str)</p></li>
+<li><p>disabled (bool)</p></li>
+<li><p>roleAller (str)</p></li>
+<li><p>roleRetour (str)</p></li>
+<li><p>validatedAller (bool)</p></li>
+<li><p>validatedRetour (bool)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Sortie (JSON):</dt><dd><p>Message de succès.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="manageReact.signup">
+<span class="sig-prename descclassname"><span class="pre">manageReact.</span></span><span class="sig-name descname"><span class="pre">signup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#manageReact.signup" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Endpoint: /signup
+Méthode: POST</p>
+<dl class="simple">
+<dt>Description:</dt><dd><p>Inscription d’un nouvel utilisateur.
+Valide l’unicité de l’email, effectue le géocodage de l’adresse,
+puis crée un nouvel utilisateur.</p>
+</dd>
+<dt>Entrée (JSON):</dt><dd><ul class="simple">
+<li><p>email (str): Adresse e-mail de l’utilisateur.</p></li>
+<li><p>first_name (str): Prénom.</p></li>
+<li><p>last_name (str): Nom.</p></li>
+<li><p>address (str): Adresse postale.</p></li>
+<li><p>password (str): Mot de passe (en clair ou haché en production).</p></li>
+<li><p>is_driver (bool): Indique si l’utilisateur est conducteur.</p></li>
+</ul>
+</dd>
+<dt>Sortie (JSON):</dt><dd><p>Un message de succès et l’ID de l’utilisateur nouvellement créé.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="manageReact.user_info">
+<span class="sig-prename descclassname"><span class="pre">manageReact.</span></span><span class="sig-name descname"><span class="pre">user_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#manageReact.user_info" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Endpoint: /user/&lt;id&gt;
+Méthode: GET</p>
+<dl class="simple">
+<dt>Description:</dt><dd><p>Récupère et retourne les informations de l’utilisateur spécifié.</p>
+</dd>
+<dt>Paramètre d’URL:</dt><dd><ul class="simple">
+<li><p>id (str): Identifiant de l’utilisateur.</p></li>
+</ul>
+</dd>
+<dt>Sortie (JSON):</dt><dd><p>Détails de l’utilisateur (prénom, nom, adresse, statut de conducteur).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-models">Module de définition des modèles de base de données et des fonctions utilitaires
+pour la gestion du calendrier et des requêtes de covoiturage.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.AddressCache">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">models.</span></span><span class="sig-name descname"><span class="pre">AddressCache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.AddressCache" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>Modèle représentant le cache d’adresses géocodées pour éviter de répéter des requêtes de géocodage.</p>
+<dl class="simple">
+<dt>Attributs :</dt><dd><ul class="simple">
+<li><p>id (int) : Clé primaire, autoincrémentée.</p></li>
+<li><p>address (str) : Adresse unique.</p></li>
+<li><p>lat (float) : Latitude.</p></li>
+<li><p>lon (float) : Longitude.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.AddressCache.address">
+<span class="sig-name descname"><span class="pre">address</span></span><a class="headerlink" href="#models.AddressCache.address" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.AddressCache.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#models.AddressCache.id" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.AddressCache.lat">
+<span class="sig-name descname"><span class="pre">lat</span></span><a class="headerlink" href="#models.AddressCache.lat" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.AddressCache.lon">
+<span class="sig-name descname"><span class="pre">lon</span></span><a class="headerlink" href="#models.AddressCache.lon" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.AddressCache.query">
+<span class="sig-name descname"><span class="pre">query</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">t.ClassVar[Query]</span></em><a class="headerlink" href="#models.AddressCache.query" title="Lien vers cette définition">¶</a></dt>
+<dd><p>A SQLAlchemy query for a model. Equivalent to <code class="docutils literal notranslate"><span class="pre">db.session.query(Model)</span></code>. Can be
+customized per-model by overriding <code class="xref py py-attr docutils literal notranslate"><span class="pre">query_class</span></code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Avertissement</p>
+<p>The query interface is considered legacy in SQLAlchemy. Prefer using
+<code class="docutils literal notranslate"><span class="pre">session.execute(select())</span></code> instead.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.CalendarEntry">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">models.</span></span><span class="sig-name descname"><span class="pre">CalendarEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.CalendarEntry" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>Modèle représentant une entrée dans le calendrier d’un utilisateur.</p>
+<p>Chaque entrée correspond à un jour (défini par l’année, le numéro de semaine ISO et le jour ISO)
+et contient des informations sur les horaires, adresses de départ/destination, et le rôle (conducteur ou passager).</p>
+<dl class="simple">
+<dt>Attributs :</dt><dd><ul class="simple">
+<li><p>id (str) : Identifiant UUID de l’entrée.</p></li>
+<li><p>user_id (str) : Référence à l’utilisateur.</p></li>
+<li><p>year (int) : Année (ex: 2025).</p></li>
+<li><p>week_number (int) : Numéro de semaine ISO (1..53).</p></li>
+<li><p>day_of_week (int) : Jour de la semaine ISO (1 = lundi, 7 = dimanche).</p></li>
+<li><p>start_hour (int) : Heure de début (optionnel).</p></li>
+<li><p>end_hour (int) : Heure de fin (optionnel).</p></li>
+<li><p>depart_aller (str) : Adresse de départ pour l’aller.</p></li>
+<li><p>destination_aller (str) : Adresse de destination pour l’aller.</p></li>
+<li><p>depart_retour (str) : Adresse de départ pour le retour.</p></li>
+<li><p>destination_retour (str) : Adresse de destination pour le retour.</p></li>
+<li><p>disabled (bool) : Indique si l’entrée est désactivée.</p></li>
+<li><p>role_aller (str) : Rôle à l’aller (par exemple, « passager » ou « conducteur »).</p></li>
+<li><p>role_retour (str) : Rôle au retour.</p></li>
+<li><p>validated_aller (bool) : Indique si l’entrée a été validée pour l’aller.</p></li>
+<li><p>validated_retour (bool) : Indique si l’entrée a été validée pour le retour.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.day_of_week">
+<span class="sig-name descname"><span class="pre">day_of_week</span></span><a class="headerlink" href="#models.CalendarEntry.day_of_week" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.depart_aller">
+<span class="sig-name descname"><span class="pre">depart_aller</span></span><a class="headerlink" href="#models.CalendarEntry.depart_aller" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.depart_retour">
+<span class="sig-name descname"><span class="pre">depart_retour</span></span><a class="headerlink" href="#models.CalendarEntry.depart_retour" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.destination_aller">
+<span class="sig-name descname"><span class="pre">destination_aller</span></span><a class="headerlink" href="#models.CalendarEntry.destination_aller" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.destination_retour">
+<span class="sig-name descname"><span class="pre">destination_retour</span></span><a class="headerlink" href="#models.CalendarEntry.destination_retour" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.disabled">
+<span class="sig-name descname"><span class="pre">disabled</span></span><a class="headerlink" href="#models.CalendarEntry.disabled" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.end_hour">
+<span class="sig-name descname"><span class="pre">end_hour</span></span><a class="headerlink" href="#models.CalendarEntry.end_hour" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#models.CalendarEntry.id" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.query">
+<span class="sig-name descname"><span class="pre">query</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">t.ClassVar[Query]</span></em><a class="headerlink" href="#models.CalendarEntry.query" title="Lien vers cette définition">¶</a></dt>
+<dd><p>A SQLAlchemy query for a model. Equivalent to <code class="docutils literal notranslate"><span class="pre">db.session.query(Model)</span></code>. Can be
+customized per-model by overriding <code class="xref py py-attr docutils literal notranslate"><span class="pre">query_class</span></code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Avertissement</p>
+<p>The query interface is considered legacy in SQLAlchemy. Prefer using
+<code class="docutils literal notranslate"><span class="pre">session.execute(select())</span></code> instead.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.role_aller">
+<span class="sig-name descname"><span class="pre">role_aller</span></span><a class="headerlink" href="#models.CalendarEntry.role_aller" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.role_retour">
+<span class="sig-name descname"><span class="pre">role_retour</span></span><a class="headerlink" href="#models.CalendarEntry.role_retour" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.start_hour">
+<span class="sig-name descname"><span class="pre">start_hour</span></span><a class="headerlink" href="#models.CalendarEntry.start_hour" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.user_id">
+<span class="sig-name descname"><span class="pre">user_id</span></span><a class="headerlink" href="#models.CalendarEntry.user_id" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.validated_aller">
+<span class="sig-name descname"><span class="pre">validated_aller</span></span><a class="headerlink" href="#models.CalendarEntry.validated_aller" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.validated_retour">
+<span class="sig-name descname"><span class="pre">validated_retour</span></span><a class="headerlink" href="#models.CalendarEntry.validated_retour" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.week_number">
+<span class="sig-name descname"><span class="pre">week_number</span></span><a class="headerlink" href="#models.CalendarEntry.week_number" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.CalendarEntry.year">
+<span class="sig-name descname"><span class="pre">year</span></span><a class="headerlink" href="#models.CalendarEntry.year" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.DriverOffer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">models.</span></span><span class="sig-name descname"><span class="pre">DriverOffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.DriverOffer" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>Modèle représentant une offre de covoiturage proposée par un conducteur
+en réponse à une demande de trajet.</p>
+<dl class="simple">
+<dt>Attributs :</dt><dd><ul class="simple">
+<li><p>id (str) : Identifiant UUID de l’offre.</p></li>
+<li><p>driver_id (str) : Référence à l’utilisateur conducteur.</p></li>
+<li><p>ride_request_id (str) : Référence à la demande de trajet.</p></li>
+<li><p>status (str) : Statut de l’offre (ex: « offered », « accepted », « declined »).</p></li>
+<li><p>departure_hour (int) : Heure de départ proposée.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.DriverOffer.departure_hour">
+<span class="sig-name descname"><span class="pre">departure_hour</span></span><a class="headerlink" href="#models.DriverOffer.departure_hour" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.DriverOffer.driver_id">
+<span class="sig-name descname"><span class="pre">driver_id</span></span><a class="headerlink" href="#models.DriverOffer.driver_id" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.DriverOffer.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#models.DriverOffer.id" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.DriverOffer.query">
+<span class="sig-name descname"><span class="pre">query</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">t.ClassVar[Query]</span></em><a class="headerlink" href="#models.DriverOffer.query" title="Lien vers cette définition">¶</a></dt>
+<dd><p>A SQLAlchemy query for a model. Equivalent to <code class="docutils literal notranslate"><span class="pre">db.session.query(Model)</span></code>. Can be
+customized per-model by overriding <code class="xref py py-attr docutils literal notranslate"><span class="pre">query_class</span></code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Avertissement</p>
+<p>The query interface is considered legacy in SQLAlchemy. Prefer using
+<code class="docutils literal notranslate"><span class="pre">session.execute(select())</span></code> instead.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.DriverOffer.ride_request_id">
+<span class="sig-name descname"><span class="pre">ride_request_id</span></span><a class="headerlink" href="#models.DriverOffer.ride_request_id" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.DriverOffer.status">
+<span class="sig-name descname"><span class="pre">status</span></span><a class="headerlink" href="#models.DriverOffer.status" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.RideRequest">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">models.</span></span><span class="sig-name descname"><span class="pre">RideRequest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.RideRequest" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>Modèle représentant une demande de covoiturage.</p>
+<dl class="simple">
+<dt>Attributs :</dt><dd><ul class="simple">
+<li><p>id (str) : Identifiant UUID de la demande.</p></li>
+<li><p>user_id (str) : Référence à l’utilisateur (passager).</p></li>
+<li><p>day (str) : Date de la demande (ex: « 2025-02-03 »).</p></li>
+<li><p>address (str) : Adresse de départ.</p></li>
+<li><p>destination (str) : Adresse de destination.</p></li>
+<li><p>lat (float) : Latitude de l’adresse de départ.</p></li>
+<li><p>lon (float) : Longitude de l’adresse de départ.</p></li>
+<li><p>start_hour (int) : Heure de début (ex: 9).</p></li>
+<li><p>end_hour (int) : Heure de fin (ex: 17).</p></li>
+<li><p>matched_driver_id (str) : Identifiant du conducteur ayant accepté la demande (optionnel).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.RideRequest.address">
+<span class="sig-name descname"><span class="pre">address</span></span><a class="headerlink" href="#models.RideRequest.address" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.RideRequest.day">
+<span class="sig-name descname"><span class="pre">day</span></span><a class="headerlink" href="#models.RideRequest.day" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.RideRequest.destination">
+<span class="sig-name descname"><span class="pre">destination</span></span><a class="headerlink" href="#models.RideRequest.destination" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.RideRequest.end_hour">
+<span class="sig-name descname"><span class="pre">end_hour</span></span><a class="headerlink" href="#models.RideRequest.end_hour" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.RideRequest.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#models.RideRequest.id" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.RideRequest.lat">
+<span class="sig-name descname"><span class="pre">lat</span></span><a class="headerlink" href="#models.RideRequest.lat" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.RideRequest.lon">
+<span class="sig-name descname"><span class="pre">lon</span></span><a class="headerlink" href="#models.RideRequest.lon" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.RideRequest.matched_driver_id">
+<span class="sig-name descname"><span class="pre">matched_driver_id</span></span><a class="headerlink" href="#models.RideRequest.matched_driver_id" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.RideRequest.query">
+<span class="sig-name descname"><span class="pre">query</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">t.ClassVar[Query]</span></em><a class="headerlink" href="#models.RideRequest.query" title="Lien vers cette définition">¶</a></dt>
+<dd><p>A SQLAlchemy query for a model. Equivalent to <code class="docutils literal notranslate"><span class="pre">db.session.query(Model)</span></code>. Can be
+customized per-model by overriding <code class="xref py py-attr docutils literal notranslate"><span class="pre">query_class</span></code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Avertissement</p>
+<p>The query interface is considered legacy in SQLAlchemy. Prefer using
+<code class="docutils literal notranslate"><span class="pre">session.execute(select())</span></code> instead.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.RideRequest.start_hour">
+<span class="sig-name descname"><span class="pre">start_hour</span></span><a class="headerlink" href="#models.RideRequest.start_hour" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.RideRequest.user_id">
+<span class="sig-name descname"><span class="pre">user_id</span></span><a class="headerlink" href="#models.RideRequest.user_id" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.User">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">models.</span></span><span class="sig-name descname"><span class="pre">User</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.User" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>Modèle représentant un utilisateur.</p>
+<dl class="simple">
+<dt>Attributs :</dt><dd><ul class="simple">
+<li><p>id (str) : Identifiant UUID de l’utilisateur.</p></li>
+<li><p>email (str) : Adresse e-mail unique.</p></li>
+<li><p>first_name (str) : Prénom.</p></li>
+<li><p>last_name (str) : Nom.</p></li>
+<li><p>password (str) : Mot de passe (en clair ou haché).</p></li>
+<li><p>address (str) : Adresse de l’utilisateur.</p></li>
+<li><p>is_driver (bool) : Indique si l’utilisateur est conducteur.</p></li>
+<li><p>calendar (str) : Texte de calendrier (optionnel).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.User.address">
+<span class="sig-name descname"><span class="pre">address</span></span><a class="headerlink" href="#models.User.address" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.User.calendar">
+<span class="sig-name descname"><span class="pre">calendar</span></span><a class="headerlink" href="#models.User.calendar" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.User.email">
+<span class="sig-name descname"><span class="pre">email</span></span><a class="headerlink" href="#models.User.email" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.User.first_name">
+<span class="sig-name descname"><span class="pre">first_name</span></span><a class="headerlink" href="#models.User.first_name" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.User.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#models.User.id" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.User.is_driver">
+<span class="sig-name descname"><span class="pre">is_driver</span></span><a class="headerlink" href="#models.User.is_driver" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.User.last_name">
+<span class="sig-name descname"><span class="pre">last_name</span></span><a class="headerlink" href="#models.User.last_name" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.User.password">
+<span class="sig-name descname"><span class="pre">password</span></span><a class="headerlink" href="#models.User.password" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.User.query">
+<span class="sig-name descname"><span class="pre">query</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">t.ClassVar[Query]</span></em><a class="headerlink" href="#models.User.query" title="Lien vers cette définition">¶</a></dt>
+<dd><p>A SQLAlchemy query for a model. Equivalent to <code class="docutils literal notranslate"><span class="pre">db.session.query(Model)</span></code>. Can be
+customized per-model by overriding <code class="xref py py-attr docutils literal notranslate"><span class="pre">query_class</span></code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Avertissement</p>
+<p>The query interface is considered legacy in SQLAlchemy. Prefer using
+<code class="docutils literal notranslate"><span class="pre">session.execute(select())</span></code> instead.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.convert_iso_string_to_calendar_slots">
+<span class="sig-prename descclassname"><span class="pre">models.</span></span><span class="sig-name descname"><span class="pre">convert_iso_string_to_calendar_slots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date_str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.convert_iso_string_to_calendar_slots" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Convertit une chaîne ISO8601 (ex: « 2025-03-30T22:00:00Z ») en un tuple (year, week_number, day_of_week)
+en interprétant l’heure donnée comme étant en UTC, puis en la convertissant en heure locale (« Europe/Paris »).
+Cela permet de gérer correctement les décalages horaires et les changements d’heure (DST).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>date_str</strong> – Chaîne de date au format ISO8601.</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple (year, week_number, day_of_week)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.local_midnight_to_utc_iso">
+<span class="sig-prename descclassname"><span class="pre">models.</span></span><span class="sig-name descname"><span class="pre">local_midnight_to_utc_iso</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">week</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day_of_week</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.local_midnight_to_utc_iso" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Reconstruit la date correspondant à minuit local pour les paramètres donnés (year, week, day_of_week)
+en utilisant la zone « Europe/Paris », puis la convertit en heure UTC sous forme d’une chaîne ISO8601.</p>
+<p>Par exemple, si minuit local en « Europe/Paris » est à 00:00 et que le décalage est de +2,
+la fonction renverra une chaîne avec « T22:00:00Z » correspondant au jour précédent en UTC.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>year</strong> – Année (int)</p></li>
+<li><p><strong>week</strong> – Numéro de semaine ISO (int)</p></li>
+<li><p><strong>day_of_week</strong> – Jour de la semaine ISO (int, 1 = lundi, 7 = dimanche)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Chaîne ISO8601 (str) représentant l’heure UTC.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.to_real_date">
+<span class="sig-prename descclassname"><span class="pre">models.</span></span><span class="sig-name descname"><span class="pre">to_real_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">week_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day_of_week</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.to_real_date" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Convertit les valeurs ISO (year, week_number, day_of_week) en une date réelle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>year</strong> – Année (int)</p></li>
+<li><p><strong>week_number</strong> – Numéro de semaine ISO (int)</p></li>
+<li><p><strong>day_of_week</strong> – Jour de la semaine ISO (int, 1 = lundi, 7 = dimanche)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Date (datetime.date)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-utils">Module de fonctions utilitaires pour la gestion du géocodage, du calcul d’itinéraire,
+et du remplacement de placeholders dans le projet.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.geocode_address">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">geocode_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.geocode_address" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Effectue le géocodage d’une adresse en utilisant l’API adresse.data.gouv.fr.</p>
+<p>Cette fonction envoie une requête à l’API afin d’obtenir les coordonnées (latitude et longitude)
+correspondant à l’adresse donnée. Si la réponse est valide, elle renvoie les coordonnées arrondies
+à 6 décimales.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>address</strong> – (str) Adresse à géocoder.</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>(tuple) (lat, lon) si le géocodage est réussi, sinon (None, None).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.get_route">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">get_route</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.get_route" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Calcule un itinéraire entre deux points en utilisant le service OSRM.</p>
+<p>Cette fonction envoie une requête à l’API OSRM pour obtenir l’itinéraire
+entre les coordonnées de départ et d’arrivée. Elle renvoie un dictionnaire contenant :
+- Le label donné,
+- La distance (en km),
+- La durée (en minutes),
+- Une géométrie simplifiée sous forme de liste de coordonnées.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_coords</strong> – (tuple) Coordonnées de départ sous la forme (lat, lon).</p></li>
+<li><p><strong>end_coords</strong> – (tuple) Coordonnées d’arrivée sous la forme (lat, lon).</p></li>
+<li><p><strong>label</strong> – (str) Label pour identifier cet itinéraire.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>(dict) Dictionnaire avec « label », « distance », « duration » et « geometry »,
+ou None si l’itinéraire n’est pas trouvé.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.replace_placeholders">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">replace_placeholders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.replace_placeholders" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Parcourt récursivement “obj” (peut être un dict, une liste ou une chaîne)
+et remplace certains mots-clés par des adresses complètes.</p>
+<p>Notamment, si le mot « Maison » est rencontré, il sera remplacé par “user_address”.
+D’autres remplacements prédéfinis sont appliqués (Villetaneuse, Bobigny, Saint-Denis).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – (dict, list, str, ou autre) Objet à traiter.</p></li>
+<li><p><strong>user_address</strong> – (str) Adresse de l’utilisateur à utiliser pour le remplacement.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>L’objet mis à jour avec les remplacements effectués.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">CovoitUniv</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Timothée MBASSIDJE Denis LINDE.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/modules.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

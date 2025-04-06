@@ -1,29 +1,74 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, jsonify # type: ignore
-from flask_sqlalchemy import SQLAlchemy # type: ignore
-from flask_cors import CORS # type: ignore
-from testCovoit import geocode_address, get_route, replace_placeholders
-from models import db,User,RideRequest,DriverOffer,CalendarEntry,convert_iso_string_to_calendar_slots,local_midnight_to_utc_iso  # <-- your models
-from pingMail import send_offer_email,SENDER_EMAIL,SENDER_PASSWORD
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, jsonify  # type: ignore
+from flask_sqlalchemy import SQLAlchemy  # type: ignore
+from flask_cors import CORS  # type: ignore
+from utils import geocode_address, get_route, replace_placeholders
+from models import db, User, RideRequest, DriverOffer, CalendarEntry, convert_iso_string_to_calendar_slots, local_midnight_to_utc_iso
+from pingMail import send_offer_email, SENDER_EMAIL, SENDER_PASSWORD
+from eralchemy import render_er
+import os
 import requests
 import uuid
 import json
+import logging
+from functools import wraps
+
+# Configuration du logging pour écrire dans un fichier de trace.
+logging.basicConfig(
+    filename='trace.log',
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s %(message)s'
+)
+
+def log_call(func):
+    """
+    Décorateur pour enregistrer les appels et retours de fonctions dans le fichier trace.log.
+
+    :param func: La fonction à instrumenter.
+    :return: La fonction décorée qui logue l'appel et le retour.
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        logging.info(f"--> Appel: {func.__name__} args: {args} kwargs: {kwargs}")
+        result = func(*args, **kwargs)
+        logging.info(f"<-- Fin: {func.__name__} return: {result}")
+        return result
+    return wrapper
 
 
-
-# Importez vos fonctions utilitaires et vos modèles depuis un autre fichier, p. ex.:
-# from models import db, User, RideRequest, DriverOffer, CalendarEntry, convert_iso_string_to_calendar_slots
-# from testCovoit import geocode_address, get_route, replace_placeholders
-# from pingMail import send_offer_email, SENDER_EMAIL, SENDER_PASSWORD
-
+# Initialisation de l'application Flask et de SQLAlchemy.
 app = Flask(__name__)
 CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SECRET_KEY'] = 'your_secret_key'
+# db.init_app(app)  # Activez cette ligne si vous utilisez SQLAlchemy via init_app.
 
-# db.init_app(app)  # à faire si vous utilisez SQLAlchemy / models init_app
+###############################################################################
+# ENDPOINTS POUR GESTION DES UTILISATEURS
+###############################################################################
 
 @app.route('/signup', methods=['POST'])
+@log_call
 def signup():
+    """
+    Endpoint: /signup
+    Méthode: POST
+
+    Description:
+        Inscription d'un nouvel utilisateur.
+        Valide l'unicité de l'email, effectue le géocodage de l'adresse,
+        puis crée un nouvel utilisateur.
+
+    Entrée (JSON):
+        - email (str): Adresse e-mail de l'utilisateur.
+        - first_name (str): Prénom.
+        - last_name (str): Nom.
+        - address (str): Adresse postale.
+        - password (str): Mot de passe (en clair ou haché en production).
+        - is_driver (bool): Indique si l'utilisateur est conducteur.
+
+    Sortie (JSON):
+        Un message de succès et l'ID de l'utilisateur nouvellement créé.
+    """
     data = request.get_json()
     email = data['email']
     first_name = data['first_name']
@@ -32,12 +77,12 @@ def signup():
     password = data['password']
     is_driver = data['is_driver']
 
-    # Vérifier email unique
+    # Vérification de l'unicité de l'email
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
         return jsonify({'error': 'Cette adresse e-mail est déjà utilisée.'}), 409
 
-    # Geocode
+    # Géocodage de l'adresse
     lat, lon = geocode_address(address)
     if not lat or not lon:
         return jsonify({'error': 'Adresse invalide', 'status': 'error'}), 400
@@ -61,10 +106,24 @@ def signup():
 
 
 @app.route('/login', methods=['POST'])
+@log_call
 def login():
+    """
+    Endpoint: /login
+    Méthode: POST
+
+    Description:
+        Authentifie un utilisateur en vérifiant son email et son mot de passe.
+
+    Entrée (JSON):
+        - email (str): Adresse e-mail.
+        - password (str): Mot de passe.
+
+    Sortie (JSON):
+        - Un token (ici, l'ID de l'utilisateur) en cas de succès, ou un message d'erreur.
+    """
     data = request.get_json()
     print("Received data for login:", data)
-
     email = data['email']
     password = data['password']
 
@@ -80,7 +139,21 @@ def login():
 
 
 @app.route('/user/<string:id>', methods=['GET'])
+@log_call
 def user_info(id):
+    """
+    Endpoint: /user/<id>
+    Méthode: GET
+
+    Description:
+        Récupère et retourne les informations de l'utilisateur spécifié.
+
+    Paramètre d'URL:
+        - id (str): Identifiant de l'utilisateur.
+
+    Sortie (JSON):
+        Détails de l'utilisateur (prénom, nom, adresse, statut de conducteur).
+    """
     user = User.query.filter_by(id=id).first()
     if user:
         return jsonify({
@@ -94,8 +167,21 @@ def user_info(id):
 
 
 @app.route('/passengers/<string:id>', methods=['GET'])
+@log_call
 def passengers(id):
-    # Récupère tous les users sauf celui dont l'id == id
+    """
+    Endpoint: /passengers/<id>
+    Méthode: GET
+
+    Description:
+        Récupère la liste de tous les utilisateurs qui ne sont pas conducteurs, à l'exclusion de l'utilisateur spécifié.
+
+    Paramètre d'URL:
+        - id (str): Identifiant de l'utilisateur à exclure.
+
+    Sortie (JSON):
+        Liste des passagers (prénom, nom, adresse).
+    """
     users = User.query.filter(User.id != id).all()
     passengers_list = []
     for u in users:
@@ -109,11 +195,41 @@ def passengers(id):
 
 
 ###############################################################################
-# Nouveau stockage du calendrier : via la table CalendarEntry (pas user.calendar)
+# ENDPOINTS POUR LA GESTION DU CALENDRIER
 ###############################################################################
 
 @app.route('/saveCal', methods=['POST'])
+@log_call
 def save_calendar_iso():
+    """
+    Endpoint: /saveCal
+    Méthode: POST
+
+    Description:
+        Sauvegarde (ou met à jour) les entrées de calendrier dans la table CalendarEntry.
+        Pour chaque jour fourni dans "calendar_changes", le système vérifie s'il existe déjà
+        une entrée pour (user_id, year, week_number, day_of_week). Si c'est le cas, il met à jour;
+        sinon, il crée une nouvelle entrée.
+
+    Entrée (JSON):
+        - user_id (str): Identifiant de l'utilisateur.
+        - calendar_changes (dict): Contient "weekNumber" et une liste "days" d'objets avec :
+            - date (str, ISO8601)
+            - startHour (int)
+            - endHour (int)
+            - departAller (str)
+            - destinationAller (str)
+            - departRetour (str)
+            - destinationRetour (str)
+            - disabled (bool)
+            - roleAller (str)
+            - roleRetour (str)
+            - validatedAller (bool)
+            - validatedRetour (bool)
+
+    Sortie (JSON):
+        Message de succès.
+    """
     data = request.get_json()
     user_id = data.get("user_id")
     calendar_changes = data.get("calendar_changes")
@@ -134,34 +250,31 @@ def save_calendar_iso():
         iso_year, iso_week, iso_day = convert_iso_string_to_calendar_slots(date_str)
         print(f"Processing date: {date_str} -> Year: {iso_year}, Week: {iso_week}, Day: {iso_day}", flush=True)
 
-        # placeholders ...
-        
-        # -- RECHERCHE D'UNE ENTREE EXISTANTE --
+        # Recherche d'une entrée existante
         existing_entry = CalendarEntry.query.filter_by(
             user_id=user_id,
             year=iso_year,
             week_number=iso_week,
             day_of_week=iso_day
         ).first()
-        
+
         if existing_entry:
-            # MISE A JOUR
+            # Mise à jour
             existing_entry.start_hour = day_obj.get("startHour")
             existing_entry.end_hour = day_obj.get("endHour")
-            existing_entry.depart_aller = replace_placeholders(day_obj.get("departAller"),user.address)
-            existing_entry.destination_aller = replace_placeholders(day_obj.get("destinationAller"),user.address)
-            existing_entry.depart_retour = replace_placeholders(day_obj.get("departRetour"),user.address)
-            print("disabled",day_obj.get("disabled", False), flush=True)
-            existing_entry.disabled=day_obj.get("disabled", False)
+            existing_entry.depart_aller = replace_placeholders(day_obj.get("departAller"), user.address)
+            existing_entry.destination_aller = replace_placeholders(day_obj.get("destinationAller"), user.address)
+            existing_entry.depart_retour = replace_placeholders(day_obj.get("departRetour"), user.address)
+            print("disabled", day_obj.get("disabled", False), flush=True)
+            existing_entry.disabled = day_obj.get("disabled", False)
             existing_entry.destination_retour = replace_placeholders(day_obj.get("destinationRetour"), user.address)
             existing_entry.role_aller = day_obj.get("roleAller")
             existing_entry.role_retour = day_obj.get("roleRetour")
             existing_entry.validated_aller = day_obj.get("validatedAller", False)
             existing_entry.validated_retour = day_obj.get("validatedRetour", False)
-            
         else:
-            # CREATION
-            print("disabled",day_obj.get("disabled", False), flush=True)
+            # Création
+            print("disabled", day_obj.get("disabled", False), flush=True)
             new_entry = CalendarEntry(
                 user_id=user_id,
                 year=iso_year,
@@ -169,11 +282,11 @@ def save_calendar_iso():
                 day_of_week=iso_day,
                 start_hour=day_obj.get("startHour"),
                 end_hour=day_obj.get("endHour"),
-                depart_aller=replace_placeholders(day_obj.get("departAller"),user.address),
-                destination_aller=replace_placeholders(day_obj.get("destinationAller"),user.address),
-                depart_retour=replace_placeholders(day_obj.get("departRetour"),user.address),
-                destination_retour=replace_placeholders(day_obj.get("destinationRetour"),user.address),
-                disabled=day_obj.get("disabled", False),  # Si l'utilisateur a désactivé cette entrée
+                depart_aller=replace_placeholders(day_obj.get("departAller"), user.address),
+                destination_aller=replace_placeholders(day_obj.get("destinationAller"), user.address),
+                depart_retour=replace_placeholders(day_obj.get("departRetour"), user.address),
+                destination_retour=replace_placeholders(day_obj.get("destinationRetour"), user.address),
+                disabled=day_obj.get("disabled", False),
                 role_aller=day_obj.get("roleAller"),
                 role_retour=day_obj.get("roleRetour"),
                 validated_aller=day_obj.get("validatedAller", False),
@@ -185,17 +298,24 @@ def save_calendar_iso():
     return jsonify({"message": "Calendar ISO entries upserted"}), 200
 
 
-
 @app.route('/propagateCalendar', methods=['POST'])
+@log_call
 def deploy_week():
     """
-    Anciennement on dupliquait user.calendar[source_week] -> toutes les semaines.
-    Maintenant qu'on n'a plus user.calendar, on lit la table CalendarEntry.
-    On garde la même signature JSON, mais on change la logique.
-    
-    { "user_id": "...", "source_week": 6 }
-    On copie toutes les entrées de la semaine 6 vers les semaines 1..52,
-    en évitant les doublons (check de non-duplication).
+    Endpoint: /propagateCalendar
+    Méthode: POST
+
+    Description:
+        Duplication de la semaine source (spécifiée par "source_week") dans la table CalendarEntry
+        pour toutes les semaines (1 à 52). Avant création d'une nouvelle entrée, on vérifie qu'il n'existe
+        pas déjà une entrée pour la même combinaison (user_id, year, week_number, day_of_week) pour éviter la duplication.
+
+    Entrée (JSON):
+        - user_id (str)
+        - source_week (int)
+
+    Sortie (JSON):
+        Un message indiquant le nombre d'entrées créées.
     """
     data = request.get_json()
     user_id = data.get("user_id")
@@ -226,24 +346,21 @@ def deploy_week():
             ).first()
 
             if existing_entry:
-                # Optionnel: vous pourriez faire une mise à jour si désiré. Ici, on skip pour éviter duplication.
                 continue
 
-            # Sinon on crée une nouvelle entrée
+            # Créer une nouvelle entrée
             e = CalendarEntry(
                 user_id=user_id,
-                year=ref_e.year,  # on garde l'année telle quelle
+                year=ref_e.year,
                 week_number=w_num,
                 day_of_week=ref_e.day_of_week,
-
                 start_hour=ref_e.start_hour,
                 end_hour=ref_e.end_hour,
                 depart_aller=ref_e.depart_aller,
                 destination_aller=ref_e.destination_aller,
                 depart_retour=ref_e.depart_retour,
                 destination_retour=ref_e.destination_retour,
-                disabled=ref_e.disabled,   # <-- un-comment if your model has it
-
+                disabled=ref_e.disabled,
                 role_aller=ref_e.role_aller,
                 role_retour=ref_e.role_retour,
                 validated_aller=ref_e.validated_aller,
@@ -260,27 +377,42 @@ def deploy_week():
     }), 200
 
 
-
 @app.route('/getCal/<string:user_id>', methods=['GET'])
+@log_call
 def get_calendar(user_id):
     """
-    L'endpoint acceptait ?indexWeek=...
-    On récupère toutes les entrées (CalendarEntry) pour user_id + week_number=indexWeek,
-    et on reconstruit:
-    {
-      "weekNumber": <indexWeek>,
-      "days": [
+    Endpoint: /getCal/<user_id>
+    Méthode: GET
+
+    Description:
+        Récupère les entrées de calendrier pour un utilisateur donné et une semaine spécifiée (via le paramètre 'indexWeek')
+        et reconstruit un objet JSON au format :
         {
-          "date": "...",
-          "startHour": ...,
-          "endHour": ...,
-          "departAller": ...,
-          ...
-        },
-        ...
-      ]
-    }
-    En recalcule la date via fromisocalendar.
+          "weekNumber": <indexWeek>,
+          "days": [
+             {
+               "date": "<ISO8601>",  # reconstitué à partir de year, week_number, day_of_week
+               "startHour": <int>,
+               "endHour": <int>,
+               "departAller": <str>,
+               "destinationAller": <str>,
+               "departRetour": <str>,
+               "destinationRetour": <str>,
+               "disabled": <bool>,
+               "roleAller": <str>,
+               "roleRetour": <str>,
+               "validatedAller": <bool>,
+               "validatedRetour": <bool>
+             },
+             ...
+          ]
+        }
+
+    Entrée (query parameter):
+        - indexWeek (int)
+
+    Sortie (JSON):
+        L'objet calendrier pour la semaine spécifiée, ou null si aucune donnée.
     """
     user = User.query.filter_by(id=user_id).first()
     if not user:
@@ -295,27 +427,22 @@ def get_calendar(user_id):
     except ValueError:
         return jsonify({'error': '"indexWeek" must be an integer'}), 400
 
-    # On récupère toutes les entrées pour la "weekNumber" demandée
     entries = CalendarEntry.query.filter_by(user_id=user_id, week_number=index_week).all()
     if not entries:
         print(f"No data found for week {index_week}")
         return jsonify({'calendar': None}), 200
 
     days_list = []
+    import datetime
     for e in entries:
-        # Recalcule la date via fromisocalendar
-        # day_of_week: 1..7 (1=lundi, 7=dimanche)
-        # week_number: 1..53
-        import datetime
         try:
-            real_date = local_midnight_to_utc_iso(e.year, e.week_number, e.day_of_week)
-            # Format ISO + suffix
-            date_str = real_date
+            # Reconstruire la date à partir de (year, week_number, day_of_week) en tenant compte de votre logique
+            # Ici on utilise la fonction local_midnight_to_utc_iso qui devrait renvoyer une date ISO (ex: "2025-03-30T22:00:00Z")
+            date_str = local_midnight_to_utc_iso(e.year, e.week_number, e.day_of_week)
         except ValueError:
-            # Si e.year/e.week_number/e.day_of_week sortent du cadre ISO,
-            # on peut gérer autrement, ici on met None
             date_str = None
-        print("disabled",e.disabled, flush=True)
+
+        print("disabled", e.disabled, flush=True)
         days_list.append({
             "date": date_str,
             "startHour": e.start_hour,
@@ -338,9 +465,26 @@ def get_calendar(user_id):
     return jsonify({'calendar': requested_week}), 200
 
 
-
 @app.route('/request_ride', methods=['POST'])
+@log_call
 def request_ride():
+    """
+    Endpoint: /request_ride
+    Méthode: POST
+
+    Description:
+        Crée ou met à jour une demande de trajet (RideRequest) pour un utilisateur pour un jour donné.
+        Si une demande existe déjà pour ce jour, elle est mise à jour.
+        Les informations (adresse de départ, destination, horaires) sont obtenues depuis CalendarEntry et transformées via replace_placeholders.
+    
+    Entrée (JSON):
+        - user_id (str)
+        - day (str): date au format "YYYY-MM-DD"
+        - timeSlot (str): "morning" ou "evening"
+
+    Sortie (JSON):
+        Informations sur la demande de trajet créée ou mise à jour.
+    """
     data = request.get_json()
     user_id = data.get('user_id')
     day_str = data.get('day')  # ex. "2025-02-03"
@@ -353,7 +497,6 @@ def request_ride():
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    # Convert day_str => iso (year, week, day_of_week)
     iso_year, iso_week, iso_day = convert_iso_string_to_calendar_slots(day_str)
     entry = CalendarEntry.query.filter_by(
         user_id=user_id,
@@ -367,11 +510,9 @@ def request_ride():
     if not time_slot:
         time_slot = "morning"
 
-    # Determine start/end hours from the calendar entry
     start_hour = entry.start_hour or 8
     end_hour = entry.end_hour or 18
 
-    # Determine addresses
     if time_slot == "morning":
         departure_address = replace_placeholders(entry.depart_aller, user_address=user.address)
         destination_address = replace_placeholders(entry.destination_aller, user_address=user.address)
@@ -385,11 +526,10 @@ def request_ride():
     if not lat or not lon:
         return jsonify({'error': 'Unable to geocode departure address'}), 400
 
-    # Check if a RideRequest already exists for this user & day
     existing_request = RideRequest.query.filter_by(user_id=user_id, day=day_str).first()
 
     if existing_request:
-        # ---- Update existing request ----
+        # Mise à jour de la demande existante
         existing_request.address = departure_address
         existing_request.destination = destination_address
         existing_request.lat = lat
@@ -407,7 +547,7 @@ def request_ride():
             "end_hour": end_hour
         }), 200
     else:
-        # ---- Create a new RideRequest ----
+        # Création d'une nouvelle demande
         new_request = RideRequest(
             user_id=user_id,
             day=day_str,
@@ -431,9 +571,25 @@ def request_ride():
         }), 200
 
 
-
 @app.route('/find_passengers', methods=['POST'])
+@log_call
 def find_passengers():
+    """
+    Endpoint: /find_passengers
+    Méthode: POST
+
+    Description:
+        Recherche des demandes de trajet (RideRequest) potentielles correspondant aux critères d'un conducteur.
+        Compare l'heure et les adresses (départ/destination) dans le calendrier des conducteurs et passagers.
+    
+    Entrée (JSON):
+        - user_id (str): l'ID du conducteur
+        - day (str): date ("YYYY-MM-DD")
+        - time_slot (str): "morning" ou "evening" (optionnel, défaut "morning")
+    
+    Sortie (JSON):
+        Une liste de demandes potentielles avec des informations sur le passager et les itinéraires.
+    """
     print("Received JSON data:", request.get_json(), flush=True)
     data = request.get_json()
     if not data:
@@ -446,15 +602,11 @@ def find_passengers():
     if not driver_id or not day_str:
         return jsonify({"error": "Missing required parameters ('driver_id', 'day')"}), 400
 
-    # 1) Récupérer le driver (conducteur)
     driver = User.query.filter_by(id=driver_id).first()
     if not driver:
         return jsonify({"error": "Driver not found"}), 404
 
-    # Convertir la date (ex: "2025-02-03") en (year, week_number, day_of_week)
     iso_year, iso_week, iso_day = convert_iso_string_to_calendar_slots(day_str)
-
-    # 2) Récupérer l'entrée de calendrier du driver pour ce jour
     entry = CalendarEntry.query.filter_by(
         user_id=driver_id,
         year=iso_year,
@@ -465,14 +617,12 @@ def find_passengers():
         print("No calendar data found for that day", flush=True)
         return jsonify({"possible_passengers": []}), 200
 
-    # Récupérer les heures de début/fin dans le calendrier
     driver_start_hour = entry.start_hour
     driver_end_hour = entry.end_hour
     if driver_start_hour is None or driver_end_hour is None:
         print("Driver's start/end hours not found in calendar", flush=True)
         return jsonify({"possible_passengers": []}), 200
 
-    # Selon "morning" ou "evening", on prend la destination du conducteur
     if time_slot.lower() == "morning":
         driver_destination = replace_placeholders(entry.destination_aller, driver.address)
         driver_departure = replace_placeholders(entry.depart_aller, driver.address)
@@ -482,7 +632,6 @@ def find_passengers():
         driver_departure = replace_placeholders(entry.depart_retour, driver.address)
         driver_time = driver_end_hour
 
-    # Géocoder l'adresse de départ du conducteur et sa destination
     driver_coords = geocode_address(driver_departure)
     if not driver_coords:
         return jsonify({"error": "Driver's start address invalid"}), 400
@@ -491,20 +640,17 @@ def find_passengers():
     if not dest_coords:
         return jsonify({"error": "Driver's destination invalid"}), 400
 
-    # 3) Récupérer les demandes de trajet (RideRequest) pour ce jour qui ne sont pas encore matchées
     ride_requests = RideRequest.query.filter_by(day=day_str, matched_driver_id=None).all()
 
-    time_tolerance = 0.5  # ±0.5h => ±30 min
+    time_tolerance = 0.5  # ±30 minutes
     possible_passengers = []
     print(f"Found {len(ride_requests)} ride requests for {day_str}", flush=True)
 
     for request_obj in ride_requests:
-        # Récupérer l'utilisateur passager
         passenger_user = User.query.filter_by(id=request_obj.user_id).first()
         if not passenger_user:
             continue
 
-        # 4) Récupérer l'entrée de calendrier du passager
         passenger_entry = CalendarEntry.query.filter_by(
             user_id=passenger_user.id,
             year=iso_year,
@@ -512,61 +658,46 @@ def find_passengers():
             day_of_week=iso_day
         ).first()
         if not passenger_entry:
-            continue  # Aucun calendrier pour ce passager ce jour-là
+            continue
 
-    
-
-        # Selon morning/evening, on va chercher l'adresse de départ/destination et l'heure
         if time_slot.lower() == "morning":
             passenger_address = replace_placeholders(passenger_entry.depart_aller, passenger_user.address)
             passenger_destination = replace_placeholders(passenger_entry.destination_aller, passenger_user.address)
             passenger_time = passenger_entry.start_hour
-
-            # ❗ Vérification : le passager et le conducteur doivent avoir la même destination le matin
             if passenger_destination != driver_destination:
                 continue
-
         else:
             passenger_address = replace_placeholders(passenger_entry.depart_retour, passenger_user.address)
             passenger_destination = replace_placeholders(passenger_entry.destination_retour, passenger_user.address)
             passenger_time = passenger_entry.end_hour
-
-            # ❗ Vérification : le passager et le conducteur doivent avoir la même adresse de départ le soir
             if passenger_address != driver_departure:
                 continue
 
         if passenger_time is None:
             continue
 
-        # Vérifier la tolérance horaire entre driver_time et passenger_time
         if abs(driver_time - passenger_time) > time_tolerance:
             continue
 
-        # Géocoder les adresses du passager
         passenger_coords = geocode_address(passenger_address)
         if not passenger_coords:
             continue
+
         passenger_dest_coords = geocode_address(passenger_destination)
         if not passenger_dest_coords:
             continue
 
-        # Itinéraire du conducteur jusqu'au passager
         route_to_passenger = get_route(driver_coords, passenger_coords, f"Driver->Passenger {request_obj.id}")
         if not route_to_passenger:
             continue
 
-        # Itinéraire du passager jusqu'à la destination finale (selon son calendrier)
         route_to_destination = get_route(passenger_coords, passenger_dest_coords, "Passenger->Destination")
         if not route_to_destination:
             continue
 
-        # Durée totale en prenant le passager
         total_duration = route_to_passenger["duration"] + route_to_destination["duration"]
-
-        # Calculer la durée du trajet normal conducteur (direct) pour comparaison
         normal_route = get_route(driver_coords, dest_coords, "Driver->Destination")
 
-        # Exemple d'une limite fixée à <= 6000s (~1h40), ajustez selon vos besoins
         if total_duration <= 6000:
             possible_passengers.append({
                 "ride_request_id": request_obj.id,
@@ -598,9 +729,26 @@ def find_passengers():
     return jsonify({"possible_passengers": possible_passengers}), 200
 
 
-
 @app.route('/offerPassenger', methods=['POST'])
+@log_call
 def offer_passenger():
+    """
+    Endpoint: /offerPassenger
+    Méthode: POST
+
+    Description:
+        Permet à un conducteur d'offrir un trajet à une demande de trajet (RideRequest) existante.
+        Vérifie que le conducteur n'offre pas un trajet à lui-même, envoie un email de notification au passager,
+        puis crée une entrée dans DriverOffer.
+
+    Entrée (JSON):
+        - driver_id (str)
+        - ride_request_id (str)
+        - departure_hour (int)
+
+    Sortie (JSON):
+        Un message de succès avec l'ID de l'offre créée.
+    """
     data = request.get_json()
     driver_id = data.get("driver_id")
     ride_request_id = data.get("ride_request_id")
@@ -643,7 +791,21 @@ def offer_passenger():
 
 
 @app.route('/rideOffers', methods=['POST'])
+@log_call
 def ride_offers():
+    """
+    Endpoint: /rideOffers
+    Méthode: POST
+
+    Description:
+        Récupère toutes les offres de trajet (DriverOffer) associées à une demande de trajet (RideRequest) donnée.
+
+    Entrée (JSON):
+        - ride_request_id (str)
+
+    Sortie (JSON):
+        Une liste d'offres comprenant l'ID de l'offre, le statut, le nom et l'adresse du conducteur.
+    """
     data = request.get_json()
     if not data:
         return jsonify({"error": "Missing JSON body"}), 400
@@ -657,7 +819,6 @@ def ride_offers():
         return jsonify({"error": "Ride request not found"}), 404
 
     offers = DriverOffer.query.filter_by(ride_request_id=ride_request_id).all()
-
     offers_data = []
     for off in offers:
         driver = User.query.filter_by(id=off.driver_id).first()
