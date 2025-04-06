@@ -15,3 +15,8 @@ Modules
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. automodule:: pingMail
+   :members:
+   :undoc-members:
+   :show-inheritance:

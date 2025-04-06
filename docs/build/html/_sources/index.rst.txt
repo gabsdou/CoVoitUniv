@@ -45,6 +45,12 @@ L'architecture du projet se compose principalement de :
 - **utils.py** : Contient des fonctions utilitaires (géocodage, calcul d'itinéraires, etc.).
 - **pingMail.py** : Gère l’envoi d’e-mails pour notifier les utilisateurs.
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Sommaire:
+
+   modules
+
 Modules
 -------
 La documentation détaillée des modules est générée automatiquement à partir des docstrings en utilisant l'extension autodoc de Sphinx.
@@ -59,10 +65,18 @@ La documentation détaillée des modules est générée automatiquement à parti
    :undoc-members:
    :show-inheritance:
 
+.. automodule:: utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Sommaire:
+.. automodule:: pingMail
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+
 
 .. MonProjet documentation master file
 

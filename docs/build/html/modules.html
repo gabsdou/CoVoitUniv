@@ -15,6 +15,7 @@
     <script src="_static/translations.js?v=e6b791cb"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Recherche" href="search.html" />
+    <link rel="prev" title="CovoitUniv documentation" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -820,6 +821,20 @@ D’autres remplacements prédéfinis sont appliqués (Villetaneuse, Bobigny, Sa
 </dl>
 </dd></dl>
 
+<dl class="py function" id="module-pingMail">
+<dt class="sig sig-object py" id="pingMail.send_email_via_gmail">
+<span class="sig-prename descclassname"><span class="pre">pingMail.</span></span><span class="sig-name descname"><span class="pre">send_email_via_gmail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sender_email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sender_password</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">body</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pingMail.send_email_via_gmail" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Sends an email using Gmail’s SMTP server.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pingMail.send_offer_email">
+<span class="sig-prename descclassname"><span class="pre">pingMail.</span></span><span class="sig-name descname"><span class="pre">send_offer_email</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passenger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">departure_hour</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sender_email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sender_password</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pingMail.send_offer_email" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Envoie deux emails :
+1. Au passager pour lui proposer un trajet.
+2. Au conducteur pour confirmer l’offre avec les infos du passager.</p>
+</dd></dl>
+
 </section>
 
 
@@ -848,11 +863,43 @@ D’autres remplacements prédéfinis sont appliqués (Villetaneuse, Bobigny, Sa
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Sommaire:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#manageReact.deploy_week"><code class="docutils literal notranslate"><span class="pre">deploy_week()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#manageReact.find_passengers"><code class="docutils literal notranslate"><span class="pre">find_passengers()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#manageReact.get_calendar"><code class="docutils literal notranslate"><span class="pre">get_calendar()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#manageReact.log_call"><code class="docutils literal notranslate"><span class="pre">log_call()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#manageReact.login"><code class="docutils literal notranslate"><span class="pre">login()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#manageReact.offer_passenger"><code class="docutils literal notranslate"><span class="pre">offer_passenger()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#manageReact.passengers"><code class="docutils literal notranslate"><span class="pre">passengers()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#manageReact.request_ride"><code class="docutils literal notranslate"><span class="pre">request_ride()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#manageReact.ride_offers"><code class="docutils literal notranslate"><span class="pre">ride_offers()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#manageReact.save_calendar_iso"><code class="docutils literal notranslate"><span class="pre">save_calendar_iso()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#manageReact.signup"><code class="docutils literal notranslate"><span class="pre">signup()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#manageReact.user_info"><code class="docutils literal notranslate"><span class="pre">user_info()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#models.AddressCache"><code class="docutils literal notranslate"><span class="pre">AddressCache</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#models.CalendarEntry"><code class="docutils literal notranslate"><span class="pre">CalendarEntry</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#models.DriverOffer"><code class="docutils literal notranslate"><span class="pre">DriverOffer</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#models.RideRequest"><code class="docutils literal notranslate"><span class="pre">RideRequest</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#models.User"><code class="docutils literal notranslate"><span class="pre">User</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#models.convert_iso_string_to_calendar_slots"><code class="docutils literal notranslate"><span class="pre">convert_iso_string_to_calendar_slots()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#models.local_midnight_to_utc_iso"><code class="docutils literal notranslate"><span class="pre">local_midnight_to_utc_iso()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#models.to_real_date"><code class="docutils literal notranslate"><span class="pre">to_real_date()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utils.geocode_address"><code class="docutils literal notranslate"><span class="pre">geocode_address()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utils.get_route"><code class="docutils literal notranslate"><span class="pre">get_route()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utils.replace_placeholders"><code class="docutils literal notranslate"><span class="pre">replace_placeholders()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pingMail.send_email_via_gmail"><code class="docutils literal notranslate"><span class="pre">send_email_via_gmail()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pingMail.send_offer_email"><code class="docutils literal notranslate"><span class="pre">send_offer_email()</span></code></a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="Chapitre précédent">CovoitUniv documentation</a></li>
   </ul></li>
 </ul>
 </div>

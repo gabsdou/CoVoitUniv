@@ -15,6 +15,7 @@
     <script src="_static/translations.js?v=e6b791cb"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Recherche" href="search.html" />
+    <link rel="next" title="Modules" href="modules.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -71,6 +72,39 @@
 <li><p><strong>utils.py</strong> : Contient des fonctions utilitaires (géocodage, calcul d’itinéraires, etc.).</p></li>
 <li><p><strong>pingMail.py</strong> : Gère l’envoi d’e-mails pour notifier les utilisateurs.</p></li>
 </ul>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Sommaire:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#manageReact.deploy_week"><code class="docutils literal notranslate"><span class="pre">deploy_week()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#manageReact.find_passengers"><code class="docutils literal notranslate"><span class="pre">find_passengers()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#manageReact.get_calendar"><code class="docutils literal notranslate"><span class="pre">get_calendar()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#manageReact.log_call"><code class="docutils literal notranslate"><span class="pre">log_call()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#manageReact.login"><code class="docutils literal notranslate"><span class="pre">login()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#manageReact.offer_passenger"><code class="docutils literal notranslate"><span class="pre">offer_passenger()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#manageReact.passengers"><code class="docutils literal notranslate"><span class="pre">passengers()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#manageReact.request_ride"><code class="docutils literal notranslate"><span class="pre">request_ride()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#manageReact.ride_offers"><code class="docutils literal notranslate"><span class="pre">ride_offers()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#manageReact.save_calendar_iso"><code class="docutils literal notranslate"><span class="pre">save_calendar_iso()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#manageReact.signup"><code class="docutils literal notranslate"><span class="pre">signup()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#manageReact.user_info"><code class="docutils literal notranslate"><span class="pre">user_info()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#models.AddressCache"><code class="docutils literal notranslate"><span class="pre">AddressCache</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#models.CalendarEntry"><code class="docutils literal notranslate"><span class="pre">CalendarEntry</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#models.DriverOffer"><code class="docutils literal notranslate"><span class="pre">DriverOffer</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#models.RideRequest"><code class="docutils literal notranslate"><span class="pre">RideRequest</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#models.User"><code class="docutils literal notranslate"><span class="pre">User</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#models.convert_iso_string_to_calendar_slots"><code class="docutils literal notranslate"><span class="pre">convert_iso_string_to_calendar_slots()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#models.local_midnight_to_utc_iso"><code class="docutils literal notranslate"><span class="pre">local_midnight_to_utc_iso()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#models.to_real_date"><code class="docutils literal notranslate"><span class="pre">to_real_date()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#utils.geocode_address"><code class="docutils literal notranslate"><span class="pre">geocode_address()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#utils.get_route"><code class="docutils literal notranslate"><span class="pre">get_route()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#utils.replace_placeholders"><code class="docutils literal notranslate"><span class="pre">replace_placeholders()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#pingMail.send_email_via_gmail"><code class="docutils literal notranslate"><span class="pre">send_email_via_gmail()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#pingMail.send_offer_email"><code class="docutils literal notranslate"><span class="pre">send_offer_email()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
 </section>
 <section id="modules">
 <h2>Modules<a class="headerlink" href="#modules" title="Lien vers cette rubrique">¶</a></h2>
@@ -795,8 +829,86 @@ la fonction renverra une chaîne avec « T22:00:00Z » correspondant au jour p
 </dl>
 </dd></dl>
 
-<div class="toctree-wrapper compound">
-</div>
+<p id="module-utils">Module de fonctions utilitaires pour la gestion du géocodage, du calcul d’itinéraire,
+et du remplacement de placeholders dans le projet.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.geocode_address">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">geocode_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.geocode_address" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Effectue le géocodage d’une adresse en utilisant l’API adresse.data.gouv.fr,
+avec mise en cache pour accélérer les calculs.</p>
+<p>Cette fonction vérifie d’abord si l’adresse est présente dans le cache (table AddressCache).
+Si c’est le cas, les coordonnées mises en cache sont retournées.
+Sinon, une requête est effectuée vers l’API, les coordonnées (latitude et longitude)
+sont extraites, arrondies à 6 décimales, enregistrées dans le cache, puis retournées.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>address</strong> – (str) Adresse à géocoder.</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>(tuple) (lat, lon) si le géocodage est réussi, sinon (None, None).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.get_route">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">get_route</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.get_route" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Calcule un itinéraire entre deux points en utilisant le service OSRM.</p>
+<p>Cette fonction envoie une requête à l’API OSRM pour obtenir l’itinéraire
+entre les coordonnées de départ et d’arrivée. Elle renvoie un dictionnaire contenant :
+- Le label donné,
+- La distance (en km),
+- La durée (en minutes),
+- Une géométrie simplifiée sous forme de liste de coordonnées.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_coords</strong> – (tuple) Coordonnées de départ sous la forme (lat, lon).</p></li>
+<li><p><strong>end_coords</strong> – (tuple) Coordonnées d’arrivée sous la forme (lat, lon).</p></li>
+<li><p><strong>label</strong> – (str) Label pour identifier cet itinéraire.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>(dict) Dictionnaire avec « label », « distance », « duration » et « geometry »,
+ou None si l’itinéraire n’est pas trouvé.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.replace_placeholders">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">replace_placeholders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.replace_placeholders" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Parcourt récursivement “obj” (peut être un dict, une liste ou une chaîne)
+et remplace certains mots-clés par des adresses complètes.</p>
+<p>Notamment, si le mot « Maison » est rencontré, il sera remplacé par “user_address”.
+D’autres remplacements prédéfinis sont appliqués (Villetaneuse, Bobigny, Saint-Denis).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – (dict, list, str, ou autre) Objet à traiter.</p></li>
+<li><p><strong>user_address</strong> – (str) Adresse de l’utilisateur à utiliser pour le remplacement.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>L’objet mis à jour avec les remplacements effectués.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function" id="module-pingMail">
+<dt class="sig sig-object py" id="pingMail.send_email_via_gmail">
+<span class="sig-prename descclassname"><span class="pre">pingMail.</span></span><span class="sig-name descname"><span class="pre">send_email_via_gmail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sender_email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sender_password</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">body</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pingMail.send_email_via_gmail" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Sends an email using Gmail’s SMTP server.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pingMail.send_offer_email">
+<span class="sig-prename descclassname"><span class="pre">pingMail.</span></span><span class="sig-name descname"><span class="pre">send_offer_email</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passenger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">departure_hour</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sender_email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sender_password</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pingMail.send_offer_email" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Envoie deux emails :
+1. Au passager pour lui proposer un trajet.
+2. Au conducteur pour confirmer l’offre avec les infos du passager.</p>
+</dd></dl>
+
 </section>
 </section>
 <section id="indices-and-tables">
@@ -834,11 +946,16 @@ la fonction renverra une chaîne avec « T22:00:00Z » correspondant au jour p
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Sommaire:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="modules.html" title="Chapitre suivant">Modules</a></li>
   </ul></li>
 </ul>
 </div>
