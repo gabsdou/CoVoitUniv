@@ -107,6 +107,16 @@ function Calendrier2025({ }) {
 
   return (
     <div>
+      <div className="info-box">
+      <p style={{}}>
+        Bienvenue sur votre calendrier personnalisé !<br />
+        Ici, vous devez définir vos <strong>horaires de présence</strong> pour chaque jour de la semaine
+        ainsi que vos <strong>envies de covoiturage</strong> (en tant que conducteur ou passager).<br />
+        Ces informations nous permettront de vous proposer des trajets adaptés avec d'autres utilisateurs. 🚗
+        Une fois les informations saisies, rendez vous sur la page "Mes trajets" pour voir vos trajets à venir et envoyer des demandes de covoiturage aux conducteurs. <br />
+        <strong>Note :</strong> Si vous ne définissez pas vos horaires de présence, vous ne pourrez pas voir les trajets proposés par d'autres utilisateurs.
+      </p></div>
+
       <h1>Calendrier Année {YEAR}</h1>
       <button
         className="today-button"
