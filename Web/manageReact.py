@@ -148,12 +148,12 @@ def save_calendar_iso():
             # MISE A JOUR
             existing_entry.start_hour = day_obj.get("startHour")
             existing_entry.end_hour = day_obj.get("endHour")
-            existing_entry.depart_aller = day_obj.get("departAller")
-            existing_entry.destination_aller = day_obj.get("destinationAller")
-            existing_entry.depart_retour = day_obj.get("departRetour")
+            existing_entry.depart_aller = replace_placeholders(day_obj.get("departAller"),user.address)
+            existing_entry.destination_aller = replace_placeholders(day_obj.get("destinationAller"),user.address)
+            existing_entry.depart_retour = replace_placeholders(day_obj.get("departRetour"),user.address)
             print("disabled",day_obj.get("disabled", False), flush=True)
             existing_entry.disabled=day_obj.get("disabled", False)
-            existing_entry.destination_retour = day_obj.get("destinationRetour")
+            existing_entry.destination_retour = replace_placeholders(day_obj.get("destinationRetour"), user.address)
             existing_entry.role_aller = day_obj.get("roleAller")
             existing_entry.role_retour = day_obj.get("roleRetour")
             existing_entry.validated_aller = day_obj.get("validatedAller", False)
@@ -169,10 +169,10 @@ def save_calendar_iso():
                 day_of_week=iso_day,
                 start_hour=day_obj.get("startHour"),
                 end_hour=day_obj.get("endHour"),
-                depart_aller=day_obj.get("departAller"),
-                destination_aller=day_obj.get("destinationAller"),
-                depart_retour=day_obj.get("departRetour"),
-                destination_retour=day_obj.get("destinationRetour"),
+                depart_aller=replace_placeholders(day_obj.get("departAller"),user.address),
+                destination_aller=replace_placeholders(day_obj.get("destinationAller"),user.address),
+                depart_retour=replace_placeholders(day_obj.get("departRetour"),user.address),
+                destination_retour=replace_placeholders(day_obj.get("destinationRetour"),user.address),
                 disabled=day_obj.get("disabled", False),  # Si l'utilisateur a désactivé cette entrée
                 role_aller=day_obj.get("roleAller"),
                 role_retour=day_obj.get("roleRetour"),
@@ -353,7 +353,7 @@ def request_ride():
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    # Convert day_str => iso
+    # Convert day_str => iso (year, week, day_of_week)
     iso_year, iso_week, iso_day = convert_iso_string_to_calendar_slots(day_str)
     entry = CalendarEntry.query.filter_by(
         user_id=user_id,
@@ -367,43 +367,69 @@ def request_ride():
     if not time_slot:
         time_slot = "morning"
 
+    # Determine start/end hours from the calendar entry
     start_hour = entry.start_hour or 8
     end_hour = entry.end_hour or 18
 
+    # Determine addresses
     if time_slot == "morning":
-        departure_address = replace_placeholders(entry.depart_aller,user_address=user.address)
-        destination_address = replace_placeholders(entry.destination_aller,user_address=user.address)
+        departure_address = replace_placeholders(entry.depart_aller, user_address=user.address)
+        destination_address = replace_placeholders(entry.destination_aller, user_address=user.address)
         entry.validated_aller = True
     else:
-        departure_address = replace_placeholders(entry.depart_retour,user.address)
-        destination_address = replace_placeholders(entry.destination_retour,user.address)
+        departure_address = replace_placeholders(entry.depart_retour, user_address=user.address)
+        destination_address = replace_placeholders(entry.destination_retour, user_address=user.address)
         entry.validated_retour = True
 
     lat, lon = geocode_address(departure_address)
     if not lat or not lon:
         return jsonify({'error': 'Unable to geocode departure address'}), 400
 
-    ride_request = RideRequest(
-        user_id=user_id,
-        day=day_str,
-        address=departure_address,
-        destination=destination_address,
-        lat=lat,
-        lon=lon,
-        start_hour=start_hour,
-        end_hour=end_hour
-    )
-    db.session.add(ride_request)
-    db.session.commit()
+    # Check if a RideRequest already exists for this user & day
+    existing_request = RideRequest.query.filter_by(user_id=user_id, day=day_str).first()
 
-    return jsonify({
-        "message": "Ride request created from calendar data",
-        "ride_request_id": ride_request.id,
-        "departure": departure_address,
-        "destination": destination_address,
-        "start_hour": start_hour,
-        "end_hour": end_hour
-    }), 200
+    if existing_request:
+        # ---- Update existing request ----
+        existing_request.address = departure_address
+        existing_request.destination = destination_address
+        existing_request.lat = lat
+        existing_request.lon = lon
+        existing_request.start_hour = start_hour
+        existing_request.end_hour = end_hour
+        db.session.commit()
+
+        return jsonify({
+            "message": "Ride request updated from calendar data",
+            "ride_request_id": existing_request.id,
+            "departure": departure_address,
+            "destination": destination_address,
+            "start_hour": start_hour,
+            "end_hour": end_hour
+        }), 200
+    else:
+        # ---- Create a new RideRequest ----
+        new_request = RideRequest(
+            user_id=user_id,
+            day=day_str,
+            address=departure_address,
+            destination=destination_address,
+            lat=lat,
+            lon=lon,
+            start_hour=start_hour,
+            end_hour=end_hour
+        )
+        db.session.add(new_request)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Ride request created from calendar data",
+            "ride_request_id": new_request.id,
+            "departure": departure_address,
+            "destination": destination_address,
+            "start_hour": start_hour,
+            "end_hour": end_hour
+        }), 200
+
 
 
 @app.route('/find_passengers', methods=['POST'])
