@@ -13,6 +13,23 @@
   padding: 2rem 1rem; /* Espace autour du contenu */
 }
 
+.info-box {
+  max-width: 800px;
+  margin: 0 auto 2rem; /* centre la box et ajoute une marge-basse */
+  background-color: #0B0B2E; /* même fond sombre que ton thème */
+  color: #ffffff;           /* texte clair */
+  padding: 1.5rem;          /* espace intérieur */
+  border-radius: 8px;       /* bords arrondis */
+  line-height: 1.5em;       /* lisibilité */
+  text-align: left;         /* alignement à gauche */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.info-box p {
+
+  margin: 0;  /* pour éviter les gros espacements multiples */
+}
+
 /* Boutons de mois */
 .month-box {
   background-color: #0B0B2E; /* Couleur de fond initiale */

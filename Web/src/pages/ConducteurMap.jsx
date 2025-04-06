@@ -168,7 +168,9 @@ const InterfaceConducteur = () => {
           `Passager ${letter}`
         );
       },
-      routeWhileDragging: true,
+      routeWhileDragging: false,
+      draggableWaypoints: false,
+      addWaypoints: false,
       autoRoute: true,
     }).addTo(map);
     document.querySelector(".leaflet-routing-container")?.remove();
@@ -331,7 +333,6 @@ const InterfaceConducteur = () => {
     const minutes = Math.round(durationInSeconds / 60);
     return `+${minutes} min`;
   };
-  
 
   return (
     <div
@@ -422,18 +423,28 @@ const InterfaceConducteur = () => {
                     color: "white",
                   }}
                 >
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                    }}
+                  >
                     <p style={{ margin: 0 }}>
                       {passager.first_name} {passager.last_name}
                     </p>
                     <span style={{ fontSize: "0.9em", color: "#f5deb3" }}>
-                      {formatDuration(passager.routes?.driver_to_passenger?.duration)}
+                      {formatDuration(
+                        passager.routes?.driver_to_passenger?.duration
+                      )}
                     </span>
                   </div>
-                  <input type="checkbox" onChange={() => toggleMarker(passager)} />
+                  <input
+                    type="checkbox"
+                    onChange={() => toggleMarker(passager)}
+                  />
                 </div>
               ))
-              
             ) : (
               <p>Aucun passager trouvé.</p>
             )}

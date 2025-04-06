@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom"; // Pour rediriger après connexion
 import { AuthContext } from "../context/AuthContext";
 import "./Inscription.css";
+import CryptoJS from "crypto-js";
 
 function Connexion() {
   const navigate = useNavigate();
@@ -25,12 +26,13 @@ function Connexion() {
     e.preventDefault();
 
     try {
+      const hashedPassword = CryptoJS.SHA256(formData.password).toString();
       const response = await fetch("http://localhost:5000/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, password: hashedPassword }),
       });
 
       const data = await response.json();

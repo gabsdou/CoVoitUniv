@@ -9,6 +9,7 @@
     "eject": "react-scripts eject"
   },
   "dependencies": {
+    "crypto-js": "^4.2.0",
     "dayjs": "^1.11.13",
     "framer-motion": "^12.6.3",
     "leaflet": "^1.9.4",

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./Inscription.css";
+import CryptoJS from "crypto-js";
 
 function Inscription() {
   const [formData, setFormData] = useState({
@@ -26,12 +27,13 @@ function Inscription() {
     e.preventDefault();
 
     try {
+      const hashedPassword = CryptoJS.SHA256(formData.password).toString();
       const response = await fetch("http://localhost:5000/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, password: hashedPassword }),
       });
 
       const data = await response.json();
@@ -106,7 +108,7 @@ function Inscription() {
               required
             />
           </div>
-          
+
           <div className="hasAccount">
             Vous avez déjà un compte?
             <br />
