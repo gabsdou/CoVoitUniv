@@ -326,6 +326,13 @@ const InterfaceConducteur = () => {
     }
   }, [map, userId, layerGroup]);
 
+  const formatDuration = (durationInSeconds) => {
+    if (!durationInSeconds) return "";
+    const minutes = Math.round(durationInSeconds / 60);
+    return `+${minutes} min`;
+  };
+  
+
   return (
     <div
       className="conducteur-map-container"
@@ -415,15 +422,18 @@ const InterfaceConducteur = () => {
                     color: "white",
                   }}
                 >
-                  <p>
-                    {passager.first_name} {passager.last_name}
-                  </p>
-                  <input
-                    type="checkbox"
-                    onChange={() => toggleMarker(passager)}
-                  />
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                    <p style={{ margin: 0 }}>
+                      {passager.first_name} {passager.last_name}
+                    </p>
+                    <span style={{ fontSize: "0.9em", color: "#f5deb3" }}>
+                      {formatDuration(passager.routes?.driver_to_passenger?.duration)}
+                    </span>
+                  </div>
+                  <input type="checkbox" onChange={() => toggleMarker(passager)} />
                 </div>
               ))
+              
             ) : (
               <p>Aucun passager trouvé.</p>
             )}
