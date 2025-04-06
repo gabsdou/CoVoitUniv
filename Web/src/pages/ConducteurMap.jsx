@@ -25,6 +25,8 @@ const InterfaceConducteur = () => {
   const [destinationMarker, setDestinationMarker] = useState(null);
   const [layerGroup, setLayerGroup] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+
 
   const startMarkerIcon = L.icon({
     iconUrl: startIcon,
@@ -315,7 +317,7 @@ const InterfaceConducteur = () => {
           console.log(`Offre envoyée au passager ${passengerId}.`);
         }
       }
-      alert("Offres envoyées avec succès !");
+      alert("Les utliisateurs sélectionnés ont été contactés.");
     } catch (error) {
       console.error("Erreur lors de l'envoi des offres :", error);
     } finally {

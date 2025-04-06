@@ -1,4 +1,5 @@
 import csv
+import hashlib
 import requests
 import json
 
@@ -13,7 +14,7 @@ with open('users.csv') as csvfile:
             "first_name": row["first_name"],
             "last_name": row["last_name"],
             "address": row["address"],
-            "password": row["password"],
+            "password": hashlib.sha256(row["password"].encode()).hexdigest(),
             "is_driver" : 0
         }
 
