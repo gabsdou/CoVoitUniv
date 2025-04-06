@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, send_from_
 from flask_sqlalchemy import SQLAlchemy # type: ignore
 from flask_cors import CORS # type: ignore
 from testCovoit import geocode_address, get_route, replace_placeholders
-from models import db,User,RideRequest,DriverOffer,CalendarEntry,convert_iso_string_to_calendar_slots  # <-- your models
+from models import db,User,RideRequest,DriverOffer,CalendarEntry,convert_iso_string_to_calendar_slots,local_midnight_to_utc_iso  # <-- your models
 from pingMail import send_offer_email,SENDER_EMAIL,SENDER_PASSWORD
 import requests
 import uuid
@@ -151,6 +151,8 @@ def save_calendar_iso():
             existing_entry.depart_aller = day_obj.get("departAller")
             existing_entry.destination_aller = day_obj.get("destinationAller")
             existing_entry.depart_retour = day_obj.get("departRetour")
+            print("disabled",day_obj.get("disabled", False), flush=True)
+            existing_entry.disabled=day_obj.get("disabled", False)
             existing_entry.destination_retour = day_obj.get("destinationRetour")
             existing_entry.role_aller = day_obj.get("roleAller")
             existing_entry.role_retour = day_obj.get("roleRetour")
@@ -159,6 +161,7 @@ def save_calendar_iso():
             
         else:
             # CREATION
+            print("disabled",day_obj.get("disabled", False), flush=True)
             new_entry = CalendarEntry(
                 user_id=user_id,
                 year=iso_year,
@@ -170,6 +173,7 @@ def save_calendar_iso():
                 destination_aller=day_obj.get("destinationAller"),
                 depart_retour=day_obj.get("departRetour"),
                 destination_retour=day_obj.get("destinationRetour"),
+                disabled=day_obj.get("disabled", False),  # Si l'utilisateur a désactivé cette entrée
                 role_aller=day_obj.get("roleAller"),
                 role_retour=day_obj.get("roleRetour"),
                 validated_aller=day_obj.get("validatedAller", False),
@@ -186,11 +190,12 @@ def save_calendar_iso():
 def deploy_week():
     """
     Anciennement on dupliquait user.calendar[source_week] -> toutes les semaines.
-    Maintenant qu'on n'a plus user.calendar, on doit lire la table CalendarEntry.
+    Maintenant qu'on n'a plus user.calendar, on lit la table CalendarEntry.
     On garde la même signature JSON, mais on change la logique.
     
     { "user_id": "...", "source_week": 6 }
-    On copie toutes les entrées de la semaine 6 vers les semaines 1..52
+    On copie toutes les entrées de la semaine 6 vers les semaines 1..52,
+    en évitant les doublons (check de non-duplication).
     """
     data = request.get_json()
     user_id = data.get("user_id")
@@ -208,11 +213,23 @@ def deploy_week():
     if not ref_entries:
         return jsonify({"error": f"No data found for source_week {ref_week_number}"}), 400
 
-    # Copie pour semaines 1..52
-    # Vous pouvez ignorer la source_week = 6 si vous voulez éviter de la dupliquer sur elle-même
+    count_created = 0
+    # Copier pour semaines 1..52
     for w_num in range(1, 53):
         for ref_e in ref_entries:
-            # deep copy
+            # Vérifier s'il existe déjà une entrée pour (user_id, year, w_num, day_of_week)
+            existing_entry = CalendarEntry.query.filter_by(
+                user_id=user_id,
+                year=ref_e.year,
+                week_number=w_num,
+                day_of_week=ref_e.day_of_week
+            ).first()
+
+            if existing_entry:
+                # Optionnel: vous pourriez faire une mise à jour si désiré. Ici, on skip pour éviter duplication.
+                continue
+
+            # Sinon on crée une nouvelle entrée
             e = CalendarEntry(
                 user_id=user_id,
                 year=ref_e.year,  # on garde l'année telle quelle
@@ -225,18 +242,23 @@ def deploy_week():
                 destination_aller=ref_e.destination_aller,
                 depart_retour=ref_e.depart_retour,
                 destination_retour=ref_e.destination_retour,
+                disabled=ref_e.disabled,   # <-- un-comment if your model has it
+
                 role_aller=ref_e.role_aller,
                 role_retour=ref_e.role_retour,
                 validated_aller=ref_e.validated_aller,
                 validated_retour=ref_e.validated_retour
             )
             db.session.add(e)
+            count_created += 1
+
     db.session.commit()
 
     return jsonify({
         "message": f"Week {ref_week_number} deployed to all weeks (1..52)",
-        "new_calendar_size": 52 * len(ref_entries)
+        "new_calendar_size": count_created
     }), 200
+
 
 
 @app.route('/getCal/<string:user_id>', methods=['GET'])
@@ -286,14 +308,14 @@ def get_calendar(user_id):
         # week_number: 1..53
         import datetime
         try:
-            real_date = datetime.date.fromisocalendar(e.year, e.week_number, e.day_of_week)
+            real_date = local_midnight_to_utc_iso(e.year, e.week_number, e.day_of_week)
             # Format ISO + suffix
-            date_str = real_date.isoformat() + "T00:00:00.000Z"
+            date_str = real_date
         except ValueError:
             # Si e.year/e.week_number/e.day_of_week sortent du cadre ISO,
             # on peut gérer autrement, ici on met None
             date_str = None
-
+        print("disabled",e.disabled, flush=True)
         days_list.append({
             "date": date_str,
             "startHour": e.start_hour,
@@ -302,6 +324,7 @@ def get_calendar(user_id):
             "destinationAller": e.destination_aller,
             "departRetour": e.depart_retour,
             "destinationRetour": e.destination_retour,
+            "disabled": e.disabled,
             "roleAller": e.role_aller,
             "roleRetour": e.role_retour,
             "validatedAller": e.validated_aller,

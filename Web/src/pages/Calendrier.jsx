@@ -9,6 +9,14 @@ import SemaineView from "./SemaineView";
 import 'dayjs/locale/fr';
 import "./Calendrier.css";
 
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+// existing dayjs.locale('fr');
+// existing dayjs.extend(isoWeek);
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 dayjs.locale('fr');
 dayjs.extend(isoWeek);
 dayjs.extend(isSameOrAfter);

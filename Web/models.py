@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 import uuid
 import datetime
 from dateutil.parser import parse
+import pytz
 db = SQLAlchemy()
 
 
@@ -80,7 +81,7 @@ class CalendarEntry(db.Model):
     destination_aller = db.Column(db.String(200), nullable=True)
     depart_retour = db.Column(db.String(200), nullable=True)
     destination_retour = db.Column(db.String(200), nullable=True)
-
+    disabled = db.Column(db.Boolean, default=False)  # If the user has disabled this entry
     role_aller = db.Column(db.String(50), nullable=True)
     role_retour = db.Column(db.String(50), nullable=True)
 
@@ -100,14 +101,42 @@ def to_real_date(year, week_number, day_of_week):
 
 
 
+
+
+
 def convert_iso_string_to_calendar_slots(date_str):
     """
-    Convertit un string 'YYYY-MM-DDTHH:MM:SSZ' (approx) en (year, week_num, day_of_week).
+    If the front-end says "2025-03-30T22:00:00Z" and we interpret that as 
+    local midnight in "America/Sao_Paulo", this function will handle DST shifts.
     """
-    dt = parse(date_str)  # ex: 2025-03-30T22:00:00.000Z
-    iso_year, iso_week, iso_day = dt.isocalendar()  # ex: (2025, 13, 7) par exemple
+    dt_utc = parse(date_str)
+    if dt_utc.tzinfo is None:
+        # If no offset, assume UTC
+        dt_utc = dt_utc.replace(tzinfo=pytz.utc)
+
+    local_zone = pytz.timezone("Europe/Paris")
+    dt_local = dt_utc.astimezone(local_zone)
+    # Now dt_local has the local date/time. If there's a DST shift, pytz will apply it.
+
+    iso_year, iso_week, iso_day = dt_local.isocalendar()
     return iso_year, iso_week, iso_day
 
+
+def local_midnight_to_utc_iso(year, week, day_of_week):
+    """
+    Rebuild local midnight for the given (year, iso-week, iso-day_of_week)
+    in "America/Sao_Paulo", then convert that to a UTC ISO string.
+    """
+    real_date = datetime.date.fromisocalendar(year, week, day_of_week)
+    # That’s the local civil date (year, month, day).
+    naive_local_dt = datetime.datetime(real_date.year, real_date.month, real_date.day, 0, 0, 0)
+
+    local_zone = pytz.timezone("Europe/Paris")
+    local_dt = local_zone.localize(naive_local_dt, is_dst=None)
+    # If DST applies on that date, local_dt will reflect the correct offset (UTC–2 or UTC–3, etc.)
+
+    utc_dt = local_dt.astimezone(pytz.utc)  # convert to real UTC
+    return utc_dt.isoformat().replace("+00:00", "Z")
 
 
 ###########################################################################################################################################DATABASE############################################################################################################
