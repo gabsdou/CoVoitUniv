@@ -371,12 +371,12 @@ def request_ride():
     end_hour = entry.end_hour or 18
 
     if time_slot == "morning":
-        departure_address = entry.depart_aller or user.address
-        destination_address = entry.destination_aller or user.address
+        departure_address = replace_placeholders(entry.depart_aller,user_address=user.address)
+        destination_address = replace_placeholders(entry.destination_aller,user_address=user.address)
         entry.validated_aller = True
     else:
-        departure_address = entry.depart_retour or user.address
-        destination_address = entry.destination_retour or user.address
+        departure_address = replace_placeholders(entry.depart_retour,user.address)
+        destination_address = replace_placeholders(entry.destination_retour,user.address)
         entry.validated_retour = True
 
     lat, lon = geocode_address(departure_address)
@@ -420,11 +420,15 @@ def find_passengers():
     if not driver_id or not day_str:
         return jsonify({"error": "Missing required parameters ('driver_id', 'day')"}), 400
 
+    # 1) Récupérer le driver (conducteur)
     driver = User.query.filter_by(id=driver_id).first()
     if not driver:
         return jsonify({"error": "Driver not found"}), 404
 
+    # Convertir la date (ex: "2025-02-03") en (year, week_number, day_of_week)
     iso_year, iso_week, iso_day = convert_iso_string_to_calendar_slots(day_str)
+
+    # 2) Récupérer l'entrée de calendrier du driver pour ce jour
     entry = CalendarEntry.query.filter_by(
         user_id=driver_id,
         year=iso_year,
@@ -435,93 +439,138 @@ def find_passengers():
         print("No calendar data found for that day", flush=True)
         return jsonify({"possible_passengers": []}), 200
 
+    # Récupérer les heures de début/fin dans le calendrier
     driver_start_hour = entry.start_hour
     driver_end_hour = entry.end_hour
     if driver_start_hour is None or driver_end_hour is None:
-        print("Driver's start/end hours not found", flush=True)
+        print("Driver's start/end hours not found in calendar", flush=True)
         return jsonify({"possible_passengers": []}), 200
 
+    # Selon "morning" ou "evening", on prend la destination du conducteur
     if time_slot.lower() == "morning":
-        driver_destination = entry.destination_aller or driver.address
+        driver_destination = replace_placeholders(entry.destination_aller, driver.address)
+        driver_departure = replace_placeholders(entry.depart_aller, driver.address)
         driver_time = driver_start_hour
     else:
-        driver_destination = entry.destination_retour or driver.address
+        driver_destination = replace_placeholders(entry.destination_retour, driver.address)
+        driver_departure = replace_placeholders(entry.depart_retour, driver.address)
         driver_time = driver_end_hour
 
-    driver_coords = geocode_address(driver.address)
+    # Géocoder l'adresse de départ du conducteur et sa destination
+    driver_coords = geocode_address(driver_departure)
     if not driver_coords:
         return jsonify({"error": "Driver's start address invalid"}), 400
+
     dest_coords = geocode_address(driver_destination)
     if not dest_coords:
         return jsonify({"error": "Driver's destination invalid"}), 400
 
+    # 3) Récupérer les demandes de trajet (RideRequest) pour ce jour qui ne sont pas encore matchées
     ride_requests = RideRequest.query.filter_by(day=day_str, matched_driver_id=None).all()
 
-    time_tolerance = 0.5  # ±30 min
+    time_tolerance = 0.5  # ±0.5h => ±30 min
     possible_passengers = []
     print(f"Found {len(ride_requests)} ride requests for {day_str}", flush=True)
 
     for request_obj in ride_requests:
-        passenger_time = (request_obj.start_hour
-                          if time_slot.lower() == "morning"
-                          else request_obj.end_hour)
+        # Récupérer l'utilisateur passager
+        passenger_user = User.query.filter_by(id=request_obj.user_id).first()
+        if not passenger_user:
+            continue
+
+        # 4) Récupérer l'entrée de calendrier du passager
+        passenger_entry = CalendarEntry.query.filter_by(
+            user_id=passenger_user.id,
+            year=iso_year,
+            week_number=iso_week,
+            day_of_week=iso_day
+        ).first()
+        if not passenger_entry:
+            continue  # Aucun calendrier pour ce passager ce jour-là
+
+    
+
+        # Selon morning/evening, on va chercher l'adresse de départ/destination et l'heure
+        if time_slot.lower() == "morning":
+            passenger_address = replace_placeholders(passenger_entry.depart_aller, passenger_user.address)
+            passenger_destination = replace_placeholders(passenger_entry.destination_aller, passenger_user.address)
+            passenger_time = passenger_entry.start_hour
+
+            # ❗ Vérification : le passager et le conducteur doivent avoir la même destination le matin
+            if passenger_destination != driver_destination:
+                continue
+
+        else:
+            passenger_address = replace_placeholders(passenger_entry.depart_retour, passenger_user.address)
+            passenger_destination = replace_placeholders(passenger_entry.destination_retour, passenger_user.address)
+            passenger_time = passenger_entry.end_hour
+
+            # ❗ Vérification : le passager et le conducteur doivent avoir la même adresse de départ le soir
+            if passenger_address != driver_departure:
+                continue
+
         if passenger_time is None:
             continue
 
+        # Vérifier la tolérance horaire entre driver_time et passenger_time
         if abs(driver_time - passenger_time) > time_tolerance:
             continue
 
-        if time_slot.lower() == "morning":
-            # Comparer destinations
-            if request_obj.destination != driver_destination:
-                continue
-
-        passenger_coords = (request_obj.lat, request_obj.lon)
-        if not passenger_coords or passenger_coords == (None, None):
+        # Géocoder les adresses du passager
+        passenger_coords = geocode_address(passenger_address)
+        if not passenger_coords:
+            continue
+        passenger_dest_coords = geocode_address(passenger_destination)
+        if not passenger_dest_coords:
             continue
 
+        # Itinéraire du conducteur jusqu'au passager
         route_to_passenger = get_route(driver_coords, passenger_coords, f"Driver->Passenger {request_obj.id}")
         if not route_to_passenger:
             continue
-        route_to_destination = get_route(passenger_coords, dest_coords, "Passenger->Destination")
+
+        # Itinéraire du passager jusqu'à la destination finale (selon son calendrier)
+        route_to_destination = get_route(passenger_coords, passenger_dest_coords, "Passenger->Destination")
         if not route_to_destination:
             continue
 
+        # Durée totale en prenant le passager
         total_duration = route_to_passenger["duration"] + route_to_destination["duration"]
-        # Dans l'ancien code, vous aviez <= 6000 => ~1h40
-        # Ajustez selon la logique désirée
+
+        # Calculer la durée du trajet normal conducteur (direct) pour comparaison
+        normal_route = get_route(driver_coords, dest_coords, "Driver->Destination")
+
+        # Exemple d'une limite fixée à <= 6000s (~1h40), ajustez selon vos besoins
         if total_duration <= 6000:
-            passenger_user = User.query.filter_by(id=request_obj.user_id).first()
-            if passenger_user:
-                normal_route = get_route(driver_coords, dest_coords, "Driver->Destination")
-                possible_passengers.append({
-                    "ride_request_id": request_obj.id,
-                    "passenger_id": passenger_user.id,
-                    "first_name": passenger_user.first_name,
-                    "last_name": passenger_user.last_name,
-                    "start_address": request_obj.address,
-                    "passenger_destination": request_obj.destination,
-                    "day": request_obj.day,
-                    "start_hour": request_obj.start_hour,
-                    "end_hour": request_obj.end_hour,
-                    "driver_destination": driver_destination,
-                    "passengers_duration": total_duration,
-                    "normal_duration": normal_route["duration"] if normal_route else None,
-                    "routes": {
-                        "driver_to_passenger": {
-                            "duration": route_to_passenger["duration"],
-                            "distance": route_to_passenger["distance"],
-                            "geometry": route_to_passenger["geometry"]
-                        },
-                        "passenger_to_destination": {
-                            "duration": route_to_destination["duration"],
-                            "distance": route_to_destination["distance"],
-                            "geometry": route_to_destination["geometry"]
-                        }
+            possible_passengers.append({
+                "ride_request_id": request_obj.id,
+                "passenger_id": passenger_user.id,
+                "first_name": passenger_user.first_name,
+                "last_name": passenger_user.last_name,
+                "passenger_address": passenger_address,
+                "passenger_destination": passenger_destination,
+                "day": request_obj.day,
+                "driver_destination": driver_destination,
+                "passenger_time": passenger_time,
+                "driver_time": driver_time,
+                "passengers_duration": total_duration,
+                "normal_duration": normal_route["duration"] if normal_route else None,
+                "routes": {
+                    "driver_to_passenger": {
+                        "duration": route_to_passenger["duration"],
+                        "distance": route_to_passenger["distance"],
+                        "geometry": route_to_passenger["geometry"]
+                    },
+                    "passenger_to_destination": {
+                        "duration": route_to_destination["duration"],
+                        "distance": route_to_destination["distance"],
+                        "geometry": route_to_destination["geometry"]
                     }
-                })
+                }
+            })
 
     return jsonify({"possible_passengers": possible_passengers}), 200
+
 
 
 @app.route('/offerPassenger', methods=['POST'])
