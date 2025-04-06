@@ -526,7 +526,7 @@ def request_ride():
     if not lat or not lon:
         return jsonify({'error': 'Unable to geocode departure address'}), 400
 
-    existing_request = RideRequest.query.filter_by(user_id=user_id, day=day_str).first()
+    existing_request = RideRequest.query.filter_by(user_id=user_id, day=day_str,time_slot=time_slot).first()
 
     if existing_request:
         # Mise à jour de la demande existante
