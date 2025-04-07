@@ -2,7 +2,11 @@ Application de mise en relation de membres, afin de proposer des routes de covoi
 
 Auteurs: 
 Gabriel Mahalin
+
 Denis Linde
+
 Timothée M'Bassidje
+
 Fares Seghiri
+
 Wissam Tahiri
